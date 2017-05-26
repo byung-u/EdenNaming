@@ -260,6 +260,25 @@ def get_5types(h10gan, h12ji):
     return '%s%s' % (res_h10gan, res_h12ji)
 
 
+def get_week_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type):
+    energy = {
+            '木': 0,
+            '火': 0,
+            '土': 0,
+            '金': 0,
+            '水': 0,
+    }
+    energy[siju_type[0]] += 1
+    energy[siju_type[1]] += 1
+    energy[iljin_type[0]] += 1
+    energy[iljin_type[1]] += 1
+    energy[wolgeon_type[0]] += 1
+    energy[wolgeon_type[1]] += 1
+    energy[secha_type[0]] += 1
+    energy[secha_type[1]] += 1
+    return min(energy, key=energy.get)  # get min value in dict
+
+
 def get_saju(conn, birth):
     year = birth[0:4]
     month = birth[4:6]
@@ -284,16 +303,18 @@ def get_saju(conn, birth):
     secha_type = get_5types(secha[0], secha[1])
     if secha_type is None:
         return None
-    print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
-    print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
-
+    #print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
+    #print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
     saju = {
             'siju': siju, 'siju_type': siju_type,
             'iljin': iljin, 'iljin_type': iljin_type,
             'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
             'secha': secha, 'secha_type': secha_type,
     }
-    return saju
+
+    week = get_week_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type)
+
+    return saju, week
 
 
 def main():
@@ -307,9 +328,13 @@ def main():
     last_name_info = get_last_name_info(conn, hanja)
 
     # STEP 2: 사주
-    saju = get_saju(conn, birth)
-    print(saju)
-    return
+    saju, week_energy = get_saju(conn, birth)
+    print(saju, week_energy)
+
+    # TODO: 부족한 기운까지 가져옴, 자원오행으로 이를 보충해주기 위한 
+    # 조건을 추가하여 이름이 될 수 있는 범위를 더 좁혀야함.
+    # adsfasdf
+    # return
 
     # STEP 3: 원형이정
     possible_name_list = get_namelist_with_wh2j(conn, last_name_info)
