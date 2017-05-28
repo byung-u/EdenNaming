@@ -19,13 +19,15 @@ def create_naming_hanja_table():
     conn = sqlite3.connect('naming_korean.db')
     create_c = conn.cursor()
 # meaning: 뜻, reading: 음, radical: 부수, strokes: 획
+# add_strokes: 원획과 필획의 획수가 다른 한자가 있어서 추가할 획수 저장
 # five_type: 오행 -> 금(金), 수(水), 목(木), 화(火), 토(土)
     create_c.execute('''
     CREATE TABLE IF NOT EXISTS naming_hanja (
     "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     "hanja" char(1) NULL,
     "strokes" integer NULL,
-    "is_naming_hanja" boolean,
+    "add_strokes" integer NULL,
+    "is_naming_hanja" char(1) NULL,
     "meaning" text NULL,
     "reading" char(1) NULL,
     "reading_strokes" integer NULL,
@@ -37,27 +39,32 @@ def create_naming_hanja_table():
     return conn
 
 
+def insert_query_naming_hanja(hanja, reading, conn):
+    insert_sc = conn.cursor()
+    query = '''
+    INSERT INTO naming_hanja (id, hanja, reading)
+    VALUES (NULL, "%s", "%s")''' % (hanja, reading)
+    insert_sc.execute(query)
+    conn.commit()
+
+
 # Supreme Court
 def insert_sc_nameing_hanja(conn, reading, naming_char, naming_char_len):
     if len(reading) != 1:
-        print('[Insert Naming Hanja] ', [reading], 'pass')
+        #print('[Insert Naming Hanja] ', [reading], 'pass')
         return
 
     if naming_char_len == 1 and naming_char[0] == '–':
-        print('[Insert Naming Hanja] ', [reading], 'pass')
+        #print('[Insert Naming Hanja] ', [reading], '– pass')
         return
 
-    insert_sc = conn.cursor()
     for i in range(naming_char_len):
-        if naming_char[i] == '𡅕':
-            print(reading, '\t', naming_char[i])
-            print('[Insert Naming Hanja] ', [reading], '𡅕 pass')
-            continue
-        query = '''
-        INSERT INTO naming_hanja (id, hanja, reading)
-        VALUES (NULL, "%s", "%s")''' % (naming_char[i], reading)
-        insert_sc.execute(query)
-        conn.commit()
+        if len(naming_char[i]) > 1:
+            exception_char = naming_char[i].replace('(', ' ').replace(')','').split()
+            for j in range(len(exception_char)):
+                insert_query_naming_hanja(exception_char[j], reading, conn)
+        else:
+            insert_query_naming_hanja(naming_char[i], reading, conn)
 
 
 def get_sc_naming_hanja(conn):
@@ -70,12 +77,11 @@ def get_sc_naming_hanja(conn):
             for td in tr.find_all('td'):
                 if idx == 1:
                     reading = td.text
-                elif idx == 3:
+                else:
                     naming_char = td.text.split()
                     naming_char_len = len(td.text.split())
                     insert_sc_nameing_hanja(conn, reading,
                                             naming_char, naming_char_len)
-
                 idx += 1
         break  # need 1 loop
 
@@ -99,10 +105,10 @@ def check_possible_naming(conn):
         soup = BeautifulSoup(r.text, 'html.parser')
         for top_box in soup.find_all(match_soup_class(['entrytop_box'])):
             if top_box.text.find('인명용') == -1:
-                update_naming_flag(0, row[0], conn)  # False
+                update_naming_flag('0', row[0], conn)  # False
                 print('[IsPossible - Nope]: ', row[0], row[1])
             else:
-                update_naming_flag(1, row[0], conn)  # True
+                update_naming_flag('1', row[0], conn)  # True
                 print('[IsPossible - Good]: ', row[0], row[1])
 
 
@@ -200,6 +206,7 @@ def set_five_type(conn):
         f_type = get_five_type(cs[0])  # 음양'오행'
         if f_type == -1:
             continue
+        print(f_type, row[0])
         update_hangul_strokes(f_type, row[0], conn)
 
 
@@ -208,13 +215,13 @@ def main():
     conn = create_naming_hanja_table()
 
     # STEP 1: get 'Supreme Court of Korea' naming hanja list
-    get_sc_naming_hanja(conn)
+    #get_sc_naming_hanja(conn)
 
     # STEP 2: filterling possible naming hanja list
-    check_possible_naming(conn)
+    #check_possible_naming(conn)
 
     # STEP 3: set detail hanja information
-    set_detail_info(conn)
+    # set_detail_info(conn)
 
     # STEP 4: select one of 5 types (木 火 水 土 金)
     set_five_type(conn)
