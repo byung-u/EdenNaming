@@ -8,7 +8,7 @@ def sqlite3_init():
     c = conn.cursor()
     # level: 격, luck: 운
     c.execute('''
-    CREATE TABLE IF NOT EXISTS naming_60_gapja_year (
+    CREATE TABLE IF NOT EXISTS naming_60_gapja (
     "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     "gapja" char(4) NULL,
     "gapja_hangul" char(4) NULL,
