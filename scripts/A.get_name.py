@@ -33,51 +33,96 @@ def get_last_name_info(conn, hanja):
     query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja where hanja="%s"' % hanja
     s.execute(query)
     row = s.fetchone()
-    print(row)
-
-    result = []
-    result.append(row[0])  # ('菊', '국', 12, 2, '木')
-    result.append(row[1])
-    if row[3] is None:
-        strokes = int(row[2])
-    else:
-        strokes = int(row[2]) + int(row[3])
-    result.append(strokes)
-    if strokes % 2 == 0:  # 짝수:-, 홀수:+
-        result.append('-')
-    else:
-        result.append('+')
-
-    result.append(row[4])  # 5 type
-    return result
+    return row
 
 
 # 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
 # 토 -> 목 -> 금 -> 화 -> 수 -> 토 (흉)
-def check_five_type(last_name, middle_name):
+def check_five_type(name_type):
     # TODO : 현재는 같거나 생인 경우에만 통과 시킴
     #        다른 케이스가 있는지 추가 확인 필요
-    if last_name == '木' and middle_name == '木':
+    # http://sajuplus.tistory.com/235
+    if name_type == '木木水':  # 木
         return True
-    elif last_name == '木' and middle_name == '火':
+    elif name_type == '木木火':
         return True
-    elif last_name == '火' and middle_name == '火':
+    elif name_type == '木水木':
         return True
-    elif last_name == '火' and middle_name == '土':
+    elif name_type == '木水水':
         return True
-    elif last_name == '土' and middle_name == '土':
+    elif name_type == '木火木':
         return True
-    elif last_name == '土' and middle_name == '金':
+    elif name_type == '木火火':
         return True
-    elif last_name == '金' and middle_name == '金':
+    elif name_type == '木火土':
         return True
-    elif last_name == '金' and middle_name == '水':
+    elif name_type == '木水金':
         return True
-    elif last_name == '水' and middle_name == '水':
+    elif name_type == '火木木':  # 火
         return True
-    elif last_name == '水' and middle_name == '木':
+    elif name_type == '火木水':
         return True
-    else:
+    elif name_type == '火木火':
+        return True
+    elif name_type == '火火木':
+        return True
+    elif name_type == '火火土':
+        return True
+    elif name_type == '火土金':
+        return True
+    elif name_type == '火土火':
+        return True
+    elif name_type == '火土土':
+        return True
+    elif name_type == '土金金':  # 土
+        return True
+    elif name_type == '土金土':
+        return True
+    elif name_type == '土金水':
+        return True
+    elif name_type == '土火木':
+        return True
+    elif name_type == '土火火':
+        return True
+    elif name_type == '土火土':
+        return True
+    elif name_type == '土土金':
+        return True
+    elif name_type == '土土火':
+        return True
+    elif name_type == '金金水':  # 金
+        return True
+    elif name_type == '金金土':
+        return True
+    elif name_type == '金水金':
+        return True
+    elif name_type == '金水木':
+        return True
+    elif name_type == '金水水':
+        return True
+    elif name_type == '金土金':
+        return True
+    elif name_type == '金土火':
+        return True
+    elif name_type == '金土土':
+        return True
+    elif name_type == '水金金':  # 水
+        return True
+    elif name_type == '水金水':
+        return True
+    elif name_type == '水金土':
+        return True
+    elif name_type == '水木木':
+        return True
+    elif name_type == '水木水':
+        return True
+    elif name_type == '水木火':
+        return True
+    elif name_type == '水水金':
+        return True
+    elif name_type == '水水木':
+        return True
+    else:  # not in  水火土金木 rule
         return False
 
 
@@ -88,69 +133,6 @@ def check_81_suri(conn, total_strokes):
         if row[0].endswith('吉') is False:  # not 吉
             return False
     return True
-
-
-def get_middle_name2(conn, last_name_info, middle_name1, m1_strokes):
-    middle_name2_list = []
-    s = conn.cursor()
-    query = 'SELECT hanja,strokes,add_strokes,five_type FROM naming_hanja'
-    for row in s.execute(query):  # ('架', 9, None, '木')
-        if middle_name1 == row[0]:
-            continue
-        if check_five_type(last_name_info[4], row[3]) is False:
-            continue
-
-        if row[2] is None:
-            strokes = int(row[1])
-        else:
-            strokes = int(row[1]) + int(row[2])
-        total_strokes = last_name_info[2] + strokes
-        if check_81_suri(conn, total_strokes) is False:  # (홍+길) 동
-            continue
-        if check_81_suri(conn, m1_strokes + strokes) is False:  # 홍 (길+동)
-            continue
-        if check_81_suri(conn, last_name_info[2] + m1_strokes + strokes) is False:  # 홍+길+동
-            continue
-        if (last_name_info[2] % 2 == 0 and m1_strokes % 2 == 0 and strokes % 2 == 0):  # 전부 획수가 음(짝수)
-            continue
-        if (last_name_info[2] % 2 == 1 and m1_strokes % 2 == 1 and strokes % 2 == 1):  # 전부 획수가 양(홀수)
-            continue
-        middle_name2_list.append(row[0])
-    return middle_name2_list
-
-
-def get_middle_and_last_name(conn, last_name_info):
-    s = conn.cursor()
-    query = 'SELECT hanja,strokes,add_strokes,five_type FROM naming_hanja'
-    # last_name = last_name_info[0]
-    for row in s.execute(query):  # ('架', 9, None, '木')
-        middle_name1 = ''
-        if check_five_type(last_name_info[4], row[3]) is False:
-            continue
-
-        if row[2] is None:
-            strokes = int(row[1])
-        else:
-            strokes = int(row[1]) + int(row[2])
-        total_strokes = last_name_info[2] + strokes
-        if check_81_suri(conn, total_strokes) is False:
-            continue
-        middle_name1 = row[0]
-        middle_name2_list = get_middle_name2(conn, last_name_info, middle_name1, strokes)
-        print(middle_name2_list)
-        print(len(middle_name2_list))
-        # FIXME : 81 수리까지 체크 완료, 조건을 더 추가해서 줄여야함
-# 1. 성에서 받침이 있는지 없는지 확인해서 줄임
-# 2. 사주를 먼저 확인해서 보태줄 수 있는 5행 극성을 찾아내서 조건을 더 줄임
-        break  # TODO: for dev MUST delete
-
-
-def get_namelist_with_wh2j(conn, last_name_info):
-
-    get_middle_and_last_name(conn, last_name_info)
-    # print(last_name_info)  # ['菊', '국', 14, '-', '木']
-
-    # check_jung_kyuk(conn, last_name_info)  # 성,이름 전부 체크
 
 
 def get_siju(iljin, hour):
@@ -260,7 +242,7 @@ def get_5types(h10gan, h12ji):
     return '%s%s' % (res_h10gan, res_h12ji)
 
 
-def get_week_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type):
+def get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type):
     energy = {
             '木': 0,
             '火': 0,
@@ -276,7 +258,7 @@ def get_week_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type):
     energy[wolgeon_type[1]] += 1
     energy[secha_type[0]] += 1
     energy[secha_type[1]] += 1
-    return min(energy, key=energy.get)  # get min value in dict
+    return min(energy, key=energy.get), max(energy, key=energy.get)
 
 
 def get_saju(conn, birth):
@@ -288,8 +270,8 @@ def get_saju(conn, birth):
     secha, wolgeon, iljin = get_secha_wolgeon_iljin(conn, year, month, day)
     siju = get_siju(iljin[0], int(hour))  # siju : hour
     # print('[DBG2] hour, day, month, year')
-    # print('[DBG2]', siju[0], iljin[0], wolgeon[0], secha[0])
-    # print('[DBG3]', siju[1], iljin[1], wolgeon[1], secha[1])
+    print('[DBG2]', siju[0], iljin[0], wolgeon[0], secha[0])
+    print('[DBG3]', siju[1], iljin[1], wolgeon[1], secha[1])
 
     siju_type = get_5types(siju[0], siju[1])
     if siju_type is None:
@@ -303,42 +285,127 @@ def get_saju(conn, birth):
     secha_type = get_5types(secha[0], secha[1])
     if secha_type is None:
         return None
-    #print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
-    #print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
-    saju = {
-            'siju': siju, 'siju_type': siju_type,
-            'iljin': iljin, 'iljin_type': iljin_type,
-            'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
-            'secha': secha, 'secha_type': secha_type,
-    }
+    print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
+    print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
+    # saju = {
+    #         'siju': siju, 'siju_type': siju_type,
+    #         'iljin': iljin, 'iljin_type': iljin_type,
+    #         'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
+    #         'secha': secha, 'secha_type': secha_type,
+    # }
 
-    week = get_week_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type)
+    week, strong = get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type)
 
-    return saju, week
+    return week, strong
+
+
+def get_name_list(conn, last_name, m1):
+    name_list = []
+    s = conn.cursor()
+    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja'
+    for m2 in s.execute(query):  # ('架', 9, None, '木')
+        if m1[0] == m2[0]:
+            continue
+        name_type = '%s%s%s' % (last_name[4], m1[4], m2[4])
+        if check_five_type(name_type) is False:
+            continue
+
+        #check_total_stroke
+        t1 = get_total_strokes(last_name, m2, None)
+        if check_81_suri(conn, t1) is False:  # (홍+길) 동
+            continue
+
+        t2 = get_total_strokes(m1, m2, None)
+        if check_81_suri(conn, t2) is False:  # 홍 (길+동)
+            continue
+
+        t3 = get_total_strokes(last_name, m1, m2)
+        if check_81_suri(conn, t3) is False:  # 홍+길+동
+            continue
+        #print(t1, t2, t3)
+        #print('\t\t', last_name[2], last_name[3], m1[2], m1[3], m2[2], m2[3])
+        temp_name = '%s%s%s' % (last_name[1], m1[1], m2[1])
+        print('\t\t', temp_name)
+ 
+        #print('last: ', last_name)
+        #print('m1  : ', middle_name)
+        #print('m2  : ', row)
+        #if (last_name_info[2] % 2 == 0 and m1_strokes % 2 == 0 and strokes % 2 == 0):  # 전부 획수가 음(짝수)
+        #    continue
+        #if (last_name_info[2] % 2 == 1 and m1_strokes % 2 == 1 and strokes % 2 == 1):  # 전부 획수가 양(홀수)
+        #    continue
+        #middle_name2_list.append(row[0])
+        #print(last_name_info[4], mid_5type, row[3])
+        #print(last_name_info[0], middle_name1, row[0])
+    #return middle_name2_list
+    return None
+
+
+"""
+1: 선천명과의 합국 조화 관계 (생년월일시를 기준으로 사주팔자법)
+2: 수리영동 조직관계
+3: 음양 배열 관계
+4: 오행의 배치 관계
+5: 자의 정신 관계
+6: 음령 오행의 역상 관계
+7: 수리 역상의 관계
+8: 어휘 어감의 조정 관계
+"""
+
+def get_total_strokes(n1, n2, n3=None):
+    if n1[3] is None:
+        n1_strk = int(n1[2])
+    else:
+        n1_strk = int(n1[2]) + int(n1[3])
+
+    if n2[3] is None:
+        n2_strk = int(n2[2])
+    else:
+        n2_strk = int(n2[2]) + int(n2[3])
+
+    if n3 is None:
+        total_strokes = n1_strk + n2_strk
+        # print(n1[2], n1[3], n2[2], n2[3], '---> ', total_strokes)
+    else:
+        if n3[3] is None:
+            n3_strk = int(n3[2])
+        else:
+            n3_strk = int(n3[2]) + int(n3[3])
+        total_strokes = n1_strk + n2_strk + n3_strk
+        print(n1[2], n1[3], n2[2], n2[3], n3[2], n3[3],'---> ', total_strokes)
+    return total_strokes
 
 
 def main():
 
     conn = sqlite3.connect('naming_korean.db')
 
-    last_name_info = []
     birth = '200203011201'
     hanja = "菊"
     # STEP 1: 성씨 정보 확인
-    last_name_info = get_last_name_info(conn, hanja)
+    last_name = get_last_name_info(conn, hanja)
 
     # STEP 2: 사주
-    saju, week_energy = get_saju(conn, birth)
-    print(saju, week_energy)
+    week, strong = get_saju(conn, birth)
+    print(week, strong)
+
+    # STEP 3: 원형이정
+    s = conn.cursor()
+    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja'
+    # last_name = last_name[0]
+    for row in s.execute(query):  # ('架', 9, None, '木')
+        # row : middle_name
+        name_list = get_name_list(conn, last_name, row)
+        break
+ 
+    # possible_name_list = get_namelist_with_wh2j(conn, last_name)
+    #print(possible_name_list)
+    # STEP 4: 음양 배열 확인 (get_middle_name2 함수에서 처리함)
+    # STEP 5: 발음 오행 법 (get_middle_name2 함수에서 처리함)
 
     # TODO: 부족한 기운까지 가져옴, 자원오행으로 이를 보충해주기 위한 
     # 조건을 추가하여 이름이 될 수 있는 범위를 더 좁혀야함.
-    # adsfasdf
-    # return
-
-    # STEP 3: 원형이정
-    possible_name_list = get_namelist_with_wh2j(conn, last_name_info)
-    print(possible_name_list)
+    return
     # STEP 1: get 'Supreme Court of Korea' naming hanja list
     # get_sc_naming_hanja(conn)
 
