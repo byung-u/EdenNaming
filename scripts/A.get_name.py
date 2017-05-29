@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import time
 import sqlite3
+
+# /usr/local/lib/python3.6/site-packages/hangul_utils
+from hangul_utils import hangul_len, split_syllable_char
+from konlpy.tag import Kkma
 
 """
 naming_hanja
@@ -26,6 +31,7 @@ TABLE naming_81
     "luck_type" char(1) NULL,
 
 """
+list_tag = [u'NNG', u'VV', u'VA', u'VXV', u'UN']
 
 
 def get_last_name_info(conn, hanja):
@@ -33,7 +39,8 @@ def get_last_name_info(conn, hanja):
     query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja where hanja="%s"' % hanja
     s.execute(query)
     row = s.fetchone()
-    return row
+
+    return list(row)
 
 
 # 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
@@ -299,10 +306,138 @@ def get_saju(conn, birth):
     return week, strong
 
 
-def get_name_list(conn, last_name, m1):
+def check_total_stroke(conn, last_name, m1, m2):
+    t1 = get_total_strokes(last_name, m2, None)
+    if check_81_suri(conn, t1) is False:  # (홍+길) 동
+        return False
+
+    t2 = get_total_strokes(m1, m2, None)
+    if check_81_suri(conn, t2) is False:  # 홍 (길+동)
+        return False
+
+    t3 = get_total_strokes(last_name, m1, m2)
+    if check_81_suri(conn, t3) is False:  # (홍+길+동)
+        return False
+
+    return True
+
+
+def get_hangul_len(s):
+    hlen = 0
+    for i in range(len(s)):
+        print(s[i])
+        hlen += hangul_len(s[i])
+    return hlen
+
+
+def check_plus_minus_hangul(conn, last_name, m1, m2):
+    # 홍길동 -> ㅎㄱㄷ (한글 획수 홀/짝 확인)
+    s1 = hangul_len(last_name[1])
+    s2 = hangul_len(m1[1])
+    s3 = hangul_len(m2[1])
+    if s1 % 2 == 0 and s2 % 2 == 0 and s3 % 2 == 0:
+        return False
+    if s1 % 2 == 1 and s2 % 2 == 1 and s3 % 2 == 1:
+        return False
+    return True
+
+
+def check_plus_minus_hanja(conn, n1, n2, n3):
+    if n1[3] is None:
+        n1_strk = int(n1[2])
+    else:
+        n1_strk = int(n1[2]) + int(n1[3])
+
+    if n2[3] is None:
+        n2_strk = int(n2[2])
+    else:
+        n2_strk = int(n2[2]) + int(n2[3])
+
+    if n3[3] is None:
+        n3_strk = int(n3[2])
+    else:
+        n3_strk = int(n3[2]) + int(n3[3])
+
+    if n1_strk % 2 == 0 and n2_strk % 2 == 0 and n3_strk % 2 == 0:
+        return False
+    if n1_strk % 2 == 1 and n2_strk % 2 == 1 and n3_strk % 2 == 1:
+        return False
+    return True
+
+
+def getting_list(filename, listname, kkma):
+    while 1:
+        line = filename.readline()
+        string = str(line)
+        line_parse = kkma.pos(string)
+        for i in line_parse:
+            if i[1] == u'SW':
+                if i[0] in [u'♡', u'♥']:
+                    listname.append(i[0])
+            if i[1] in list_tag:
+                listname.append(i[0])
+        if not line:
+            break
+    return listname
+
+
+# naive bayes classifier + smoothing
+def naive_bayes_classifier(test, train, all_count):
+    counter = 0
+    list_count = []
+    for i in test:
+        for j in range(len(train)):
+            if i == train[j]:
+                counter = counter + 1
+        list_count.append(counter)
+        counter = 0
+    list_naive = []
+    for i in range(len(list_count)):
+        list_naive.append((list_count[i]+1)/float(len(train)+all_count))
+    result = 1
+    for i in range(len(list_naive)):
+        result *= float(round(list_naive[i], 6))
+    return float(result)*float(1.0/3.0)
+
+
+def check_hangul_hard_pronounce(last_name, m1, m2):
+    s1 = split_syllable_char(last_name[1])
+    s2 = split_syllable_char(m1[1])
+    s3 = split_syllable_char(m2[1])
+
+    if (s1[0] == s2[0] == s3[0]):  # 김구관
+        return False
+
+    if (s2[0] == s3[0]):  # 이름의 자음이 같은 경우에 모음 확인
+        if (s2[1] == 'ㅜ' and s3[1] == 'ㅜ'):  # 최준주
+            return False
+        elif (s2[1] == 'ㅜ' and s3[1] == 'ㅠ'):  # 김주쥬
+            return False
+        elif (s2[1] == 'ㅗ' and s3[1] == 'ㅗ'):  # 박곤고
+            return False
+        elif (s2[1] == 'ㅗ' and s3[1] == 'ㅛ'):  # 박포표
+            return False
+
+    if (s2[1] == 'ㅖ' and s3[1] == 'ㅖ'):  # 이계혜
+            return False
+    elif (s2[1] == 'ㅖ' and s3[1] == 'ㅐ'):  # 이혜애
+            return False
+
+    if len(s2) == 3 and len(s3) == 3:
+        if (s2[1] == 'ㅕ' and s2[2] == 'ㄴ' and s3[1] == 'ㅕ' and s3[2] == 'ㄴ'):  # 최현련
+            return False
+        elif (s2[1] == 'ㅕ' and s2[2] == 'ㅇ' and s3[1] == 'ㅕ' and s3[2] == 'ㅇ'):  # 최영경
+            return False
+        elif (s2[2] == 'ㄱ' and s3[2] == 'ㄱ'):  # 이혁탁
+            return False
+
+    return True
+
+  
+def get_name_list(conn, last_name, m1, kkma, list_positive, list_negative, list_neutral, ALL):
     name_list = []
     s = conn.cursor()
-    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja'
+    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja WHERE is_naming_hanja=1;'
     for m2 in s.execute(query):  # ('架', 9, None, '木')
         if m1[0] == m2[0]:
             continue
@@ -310,35 +445,25 @@ def get_name_list(conn, last_name, m1):
         if check_five_type(name_type) is False:
             continue
 
-        #check_total_stroke
-        t1 = get_total_strokes(last_name, m2, None)
-        if check_81_suri(conn, t1) is False:  # (홍+길) 동
+        if check_total_stroke(conn, last_name, m1, m2) is False:
             continue
 
-        t2 = get_total_strokes(m1, m2, None)
-        if check_81_suri(conn, t2) is False:  # 홍 (길+동)
+        if check_plus_minus_hangul(conn, last_name, m1, m2) is False:
             continue
 
-        t3 = get_total_strokes(last_name, m1, m2)
-        if check_81_suri(conn, t3) is False:  # 홍+길+동
+        if check_plus_minus_hanja(conn, last_name, m1, m2) is False:
             continue
-        #print(t1, t2, t3)
-        #print('\t\t', last_name[2], last_name[3], m1[2], m1[3], m2[2], m2[3])
+
+        if check_hangul_hard_pronounce(last_name, m1, m2) is False:
+            continue
+
+        name2 = '%s%s' % (m1[1], m2[1])
+        pos = kkma.pos(name2)
+        if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
+            continue
         temp_name = '%s%s%s' % (last_name[1], m1[1], m2[1])
-        print('\t\t', temp_name)
- 
-        #print('last: ', last_name)
-        #print('m1  : ', middle_name)
-        #print('m2  : ', row)
-        #if (last_name_info[2] % 2 == 0 and m1_strokes % 2 == 0 and strokes % 2 == 0):  # 전부 획수가 음(짝수)
-        #    continue
-        #if (last_name_info[2] % 2 == 1 and m1_strokes % 2 == 1 and strokes % 2 == 1):  # 전부 획수가 양(홀수)
-        #    continue
-        #middle_name2_list.append(row[0])
-        #print(last_name_info[4], mid_5type, row[3])
-        #print(last_name_info[0], middle_name1, row[0])
-    #return middle_name2_list
-    return None
+        name_list.append(temp_name)
+    return name_list
 
 
 """
@@ -351,6 +476,7 @@ def get_name_list(conn, last_name, m1):
 7: 수리 역상의 관계
 8: 어휘 어감의 조정 관계
 """
+
 
 def get_total_strokes(n1, n2, n3=None):
     if n1[3] is None:
@@ -372,53 +498,108 @@ def get_total_strokes(n1, n2, n3=None):
         else:
             n3_strk = int(n3[2]) + int(n3[3])
         total_strokes = n1_strk + n2_strk + n3_strk
-        print(n1[2], n1[3], n2[2], n2[3], n3[2], n3[3],'---> ', total_strokes)
+        # print(n1[2], n1[3], n2[2], n2[3], n3[2], n3[3], '-> ', total_strokes)
     return total_strokes
 
 
-def main():
+def emotion_check(pos, list_positive, list_negative, list_neutral, ALL):
+    meaning_res = []
+    for i in pos:
+        if i[1] == u'SW':
+            if i[0] in [u'♡', u'♥']:
+                meaning_res.append(i[0])
+        if i[1] in list_tag:
+            meaning_res.append(i[0])
 
+    # naive bayes 값 계산
+    result_pos = naive_bayes_classifier(meaning_res, list_positive, ALL)
+    result_neg = naive_bayes_classifier(meaning_res, list_negative, ALL)
+    result_neu = naive_bayes_classifier(meaning_res, list_neutral, ALL)
+
+    if (result_pos > result_neg and result_pos > result_neu):
+        # print(u'긍정', '+:', result_pos, '-:', result_neg, name)
+        return True
+    else:  # 부정, 중립
+        return False
+
+
+# def check_name_emotion(conn, name_list, kkma, list_positive, list_negative, list_neutral, ALL):
+#    filtered_list = []
+#    for i in range(len(name_list)):
+#        # STEP 1: 홍 길 X
+#        name1 = '%s%s' % (name_list[i][0], name_list[i][1])
+#        pos = kkma.pos(name1)
+#        if emotion_check(name_list[i], pos, list_positive, list_negative, list_neutral, ALL) is False:
+#            continue
+#         = '%s%s' % (name_list[i][1], name_list[i][2])
+#        pos = kkma.pos()
+#        if emotion_check(name_list[i], pos, list_positive, list_negative, list_neutral, ALL) is False:
+#            continue
+#        filtered_list.append(name_list[i])
+#
+#    return filtered_list
+
+
+def main():
     conn = sqlite3.connect('naming_korean.db')
+    kkma = Kkma()
+
+    # getting_list함수를 통해 필요한 tag를 추출하여 list 생성
+    f_pos = open('positive-words-ko-v2.txt', 'r')
+    f_neg = open('negative-words-ko-v2.txt', 'r')
+    f_neu = open('neutral-words-ko-v2.txt', 'r')
+
+    list_positive = []
+    list_negative = []
+    list_neutral = []
+
+    list_positive = getting_list(f_pos, list_positive, kkma)
+    list_negative = getting_list(f_neg, list_negative, kkma)
+    list_neutral = getting_list(f_neu, list_neutral, kkma)
+    ALL = len(set(list_positive)) + len(set(list_negative)) + len(set(list_neutral))
+
+    # START
+    start_time = time.time()
 
     birth = '200203011201'
-    hanja = "菊"
+    hanja = "李"
+    #hanja = "菊"
     # STEP 1: 성씨 정보 확인
     last_name = get_last_name_info(conn, hanja)
+    if last_name[1] == '리':
+        last_name[1] = '이'
+    elif last_name[1] == '로':
+        last_name[1] = '노'
 
     # STEP 2: 사주
     week, strong = get_saju(conn, birth)
     print(week, strong)
 
-    # STEP 3: 원형이정
     s = conn.cursor()
-    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja'
+    # query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja;'
+    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja WHERE is_naming_hanja=1;'
     # last_name = last_name[0]
     for row in s.execute(query):  # ('架', 9, None, '木')
+        #TODO: FIXME: check saju!!!!!!  여기서 보충해주는거 제외하고 버려
         # row : middle_name
-        name_list = get_name_list(conn, last_name, row)
-        break
- 
-    # possible_name_list = get_namelist_with_wh2j(conn, last_name)
-    #print(possible_name_list)
-    # STEP 4: 음양 배열 확인 (get_middle_name2 함수에서 처리함)
-    # STEP 5: 발음 오행 법 (get_middle_name2 함수에서 처리함)
+        name1 = '%s%s' % (last_name[1], row[1])
+        pos = kkma.pos(name1)
+        if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
+            # print('[Pass]: ', name1)
+            continue
+        name_list = get_name_list(conn, last_name, row, kkma, list_positive, list_negative, list_neutral, ALL)
+        if len(name_list) <= 0:
+            continue
+        print(name_list, len(name_list))
+        # print(filtered_list, len(filtered_list))
 
-    # TODO: 부족한 기운까지 가져옴, 자원오행으로 이를 보충해주기 위한 
-    # 조건을 추가하여 이름이 될 수 있는 범위를 더 좁혀야함.
-    return
-    # STEP 1: get 'Supreme Court of Korea' naming hanja list
-    # get_sc_naming_hanja(conn)
-
-    # STEP 2: filterling possible naming hanja list
-    # check_possible_naming(conn)
-
-    # STEP 3: set detail hanja information
-    # set_detail_info(conn)
-
-    # STEP 4: select one of 5 types (木 火 水 土 金)
-    # set_five_type(conn)
-
+    # END
+    print("--- %s seconds ---" % (time.time() - start_time))
+    f_pos.close()
+    f_neg.close()
+    f_neu.close()
     conn.close()  # sqlite3 close
+    return
 
 
 if __name__ == '__main__':
