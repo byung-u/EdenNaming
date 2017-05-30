@@ -244,12 +244,8 @@ def get_saju(conn, birth):
     month = birth[4:6]
     day = birth[6:8]
     hour = birth[8:10]
-    # print('[DBG1]', year, month, day, hour)
     secha, wolgeon, iljin = get_secha_wolgeon_iljin(conn, year, month, day)
     siju = get_siju(iljin[0], int(hour))  # siju : hour
-    # print('[DBG2] hour, day, month, year')
-    # print('[DBG2]', siju[0], iljin[0], wolgeon[0], secha[0])
-    # print('[DBG3]', siju[1], iljin[1], wolgeon[1], secha[1])
 
     siju_type = get_5types(siju[0], siju[1])
     if siju_type is None:
@@ -263,6 +259,10 @@ def get_saju(conn, birth):
     secha_type = get_5types(secha[0], secha[1])
     if secha_type is None:
         return None
+    # print('[DBG1]', year, month, day, hour)
+    # print('[DBG2] hour, day, month, year')
+    # print('[DBG2]', siju[0], iljin[0], wolgeon[0], secha[0])
+    # print('[DBG3]', siju[1], iljin[1], wolgeon[1], secha[1])
     # print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
     # print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
 
@@ -344,6 +344,11 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
     if (s1[0] == s2[0] == s3[0]):  # 김구관
         return False
 
+    if (s2[1] == 'ㅐ'):  # 김해선 -> 김혜선
+        return False
+    elif (s3[1] == 'ㅔ'):  # 김지에 -> 김지애
+        return False
+
     if (s2[0] == s3[0]):  # 이름의 자음이 같은 경우에 모음 확인
         if (s2[1] == 'ㅜ' and s3[1] == 'ㅜ'):  # 최준주
             return False
@@ -388,7 +393,8 @@ def get_name_list(conn, last_name, m1):
     query = """
     SELECT hanja,reading,strokes,add_strokes,five_type
     FROM naming_hanja
-    WHERE is_naming_hanja=1 AND reading NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천', '택', '탁', '태')
+    WHERE is_naming_hanja=1 AND reading
+    NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천', '택', '탁', '태', '외')
     """
     for m2 in s.execute(query):  # ('架', 9, None, '木')
         if m1[0] == m2[0]:
@@ -419,6 +425,10 @@ def get_name_list(conn, last_name, m1):
 
         temp_name = '%s%s%s' % (last_name[1], m1[1], m2[1])
         name_list.append(temp_name)
+
+    if len(name_list) == 0:
+        return None
+
     return name_list
 
 
@@ -582,11 +592,10 @@ def type_check_with_month(saju, row):
 
 
 def main():
+    start_time = time.time()  # START
     conn = sqlite3.connect('naming_korean.db')
 
-    # START
-    start_time = time.time()
-
+    # TEST data
     birth = '200203011201'
     hanja = "金"  # 菊 李
 
@@ -598,6 +607,8 @@ def main():
         last_name[1] = '노'
     elif last_name[1] == '금':
         last_name[1] = '김'
+    elif last_name[1] == '림':
+        last_name[1] = '임'
 
     # STEP 2: 사주
     saju = get_saju(conn, birth)
@@ -612,7 +623,7 @@ def main():
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
-    NOT IN ('각', '과', '국', '렴', '린', '랑', '려', '령', '락', '량', '련', '애', '엄', '열', '오', '요', '빈', '표', '필', '탁', '회', '후')
+    NOT IN ('각', '과', '국', '렴', '린', '랑', '려', '령', '락', '량', '련', '복', '애', '엄', '열', '오', '요', '빈', '표', '필', '탁', '회', '후')
     """
     total_list = 0
     for row in s.execute(query):  # ('架', 9, None, '木')
@@ -623,15 +634,14 @@ def main():
         except:
             pass
         name_list = get_name_list(conn, last_name, row)
-        if len(name_list) <= 0:
+        if name_list is None:
             continue
         print(name_list)
         total_list += len(name_list)
 
-    # END
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.time() - start_time))  # END
     print('Total: ', total_list)
-    conn.close()  # sqlite3 close
+    conn.close()  # db close
     return
 
 
