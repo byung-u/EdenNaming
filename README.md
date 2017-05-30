@@ -22,8 +22,9 @@ Naming Works
 성명학(姓名學)에 대한 인식 (金栢滿 김백만, 새국어생활, Vol.1 No.1, [1991])
 
 #### SITE
-https://namu.wiki/w/갑자
-http://help.scourt.go.kr/nm/img/hanja/hanja_2015.pdf
+- 갑자: https://namu.wiki/w/갑자
+- 인명한자: http://help.scourt.go.kr/nm/img/hanja/hanja_2015.pdf
+- 긍정어, 부정어 분류: http://newpower.tistory.com/127
 
 # 감정 데이터
 https://github.com/The-ECG/BigData1_1.3.3_Text-Mining/blob/master/dictionary.zip
