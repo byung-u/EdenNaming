@@ -95,4 +95,4 @@ __pycache__/
 static/
 *.pyc
 *.bak
-db.sqlite3
+*.sqlite3
