@@ -30,3 +30,8 @@ Naming Works
 # 감정 데이터
 https://github.com/The-ECG/BigData1_1.3.3_Text-Mining/blob/master/dictionary.zip
 
+
+VIM command
+-----------
+- ,(comma) to \n(newline)
+`:%s/,\ /\r/g`
