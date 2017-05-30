@@ -7,30 +7,7 @@ import sqlite3
 from hangul_utils import hangul_len, split_syllable_char
 from konlpy.tag import Kkma
 
-"""
-naming_hanja
-"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-"hanja" char(1) NULL,
-"strokes" integer NULL,
-"add_strokes" integer NULL,
-"is_naming_hanja" char(1) NULL,
-"meaning" text NULL,
-"reading" char(1) NULL,
-"reading_strokes" integer NULL,
-"radical" char(1) NULL,
-"radical_info" varchar(128) NULL,
-"five_type" char(1) NULL)''')
 
-
-TABLE naming_81
-    "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "strokes" integer NULL,
-    "reference" char(16) NULL,
-    "level" char(16) NULL,
-    "luck" char(16) NULL,
-    "luck_type" char(1) NULL,
-
-"""
 list_tag = [u'NNG', u'VV', u'VA', u'VXV', u'UN']
 
 
@@ -294,16 +271,16 @@ def get_saju(conn, birth):
         return None
     print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
     print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
-    # saju = {
-    #         'siju': siju, 'siju_type': siju_type,
-    #         'iljin': iljin, 'iljin_type': iljin_type,
-    #         'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
-    #         'secha': secha, 'secha_type': secha_type,
-    # }
 
-    week, strong = get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type)
-
-    return week, strong
+    weak, strong = get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type)
+    saju = {
+            'year': year, 'month': month, 'weak': weak, 'strong': strong,
+            'siju': siju, 'siju_type': siju_type,
+            'iljin': iljin, 'iljin_type': iljin_type,
+            'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
+            'secha': secha, 'secha_type': secha_type,
+    }
+    return saju
 
 
 def check_total_stroke(conn, last_name, m1, m2):
@@ -422,22 +399,38 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
             return False
     elif (s2[1] == 'ㅖ' and s3[1] == 'ㅐ'):  # 이혜애
             return False
+    elif (s2[1] == 'ㅖ' and s3[1] == 'ㅔ'):  # 이혜에
+            return False
+
+    if len(s2) == 3 and len(s3) > 1:
+        if s2[2] == s3[0]:  # 김열루
+            return False
 
     if len(s2) == 3 and len(s3) == 3:
         if (s2[1] == 'ㅕ' and s2[2] == 'ㄴ' and s3[1] == 'ㅕ' and s3[2] == 'ㄴ'):  # 최현련
             return False
+        elif (s2[1] == 'ㅕ' and s2[2] == 'ㅁ' and s3[1] == 'ㅕ' and s3[2] == 'ㅇ'):  # 최겸경
+            return False
         elif (s2[1] == 'ㅕ' and s2[2] == 'ㅇ' and s3[1] == 'ㅕ' and s3[2] == 'ㅇ'):  # 최영경
             return False
+        elif (s2[1] == 'ㅑ' and s2[2] == 'ㅇ' and s3[1] == 'ㅕ' and s3[2] == 'ㅁ'):  # 최양념
+            return False
         elif (s2[2] == 'ㄱ' and s3[2] == 'ㄱ'):  # 이혁탁
+            return False
+        elif (s2[2] == 'ㄴ' and s3[2] == 'ㄴ'):  # 이완린
             return False
 
     return True
 
-  
+
 def get_name_list(conn, last_name, m1, kkma, list_positive, list_negative, list_neutral, ALL):
     name_list = []
     s = conn.cursor()
-    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja WHERE is_naming_hanja=1;'
+    query = """
+    SELECT hanja,reading,strokes,add_strokes,five_type
+    FROM naming_hanja
+    WHERE is_naming_hanja=1 AND reading NOT IN ('최', '충')
+    """
     for m2 in s.execute(query):  # ('架', 9, None, '木')
         if m1[0] == m2[0]:
             continue
@@ -516,28 +509,133 @@ def emotion_check(pos, list_positive, list_negative, list_neutral, ALL):
     result_neg = naive_bayes_classifier(meaning_res, list_negative, ALL)
     result_neu = naive_bayes_classifier(meaning_res, list_neutral, ALL)
 
-    if (result_pos > result_neg and result_pos > result_neu):
-        # print(u'긍정', '+:', result_pos, '-:', result_neg, name)
+    if (result_pos > result_neg and result_pos > result_neu):  # 긍정
         return True
     else:  # 부정, 중립
         return False
 
 
-# def check_name_emotion(conn, name_list, kkma, list_positive, list_negative, list_neutral, ALL):
-#    filtered_list = []
-#    for i in range(len(name_list)):
-#        # STEP 1: 홍 길 X
-#        name1 = '%s%s' % (name_list[i][0], name_list[i][1])
-#        pos = kkma.pos(name1)
-#        if emotion_check(name_list[i], pos, list_positive, list_negative, list_neutral, ALL) is False:
-#            continue
-#         = '%s%s' % (name_list[i][1], name_list[i][2])
-#        pos = kkma.pos()
-#        if emotion_check(name_list[i], pos, list_positive, list_negative, list_neutral, ALL) is False:
-#            continue
-#        filtered_list.append(name_list[i])
-#
-#    return filtered_list
+"""
+▣ 사주에 ‘木’이 3개이상 있을때는 ‘火’ 또는 ‘金’에 해당하는 글자로 작명합니다.
+▣ 사주에 ‘土’가 3개이상 있을때는 ‘金’ 또는 ‘木’에 해당하는 글자로 작명합니다.
+▣ 사주에 ‘火’가 3개이상 있을때는 ‘土’ 또는 ‘水’에 해당하는 글자로 작명합니다.
+▣ 사주에 ‘金’이 3개이상 있을때는 ‘水’ 또는 ‘火’에 해당하는 글자로 작명합니다.
+▣ 사주에 ‘水’가 3개이상 있을때는 ‘木’ 또는 ‘土’에 해당하는 글자로 작명합니다.
+   if strong == '木' and row[4] == '火':
+       return True
+   elif strong == '木' and row[4] == '金':
+       return True
+   elif strong == '土' and row[4] == '金':
+       return True
+   elif strong == '土' and row[4] == '木':
+       return True
+   elif strong == '火' and row[4] == '土':
+       return True
+   elif strong == '火' and row[4] == '水':
+       return True
+   elif strong == '金' and row[4] == '水':
+       return True
+   elif strong == '金' and row[4] == '火':
+       return True
+   elif strong == '水' and row[4] == '木':
+       return True
+   elif strong == '水' and row[4] == '土':
+       return True
+   else:
+       return False
+"""
+
+
+def type_check_with_month(saju, row):
+    strong = saju['strong']
+    month = saju['month']
+    # 木火土金水
+    if month == '01' or month == '02' or month == '03':
+        if strong == '木' and row[4] == '木':
+            return False
+        elif strong == '木' and row[4] == '水':
+            return False
+        elif strong == '火' and row[4] == '木':
+            return False
+        elif strong == '火' and row[4] == '火':
+            return False
+        elif strong == '土' and row[4] == '水':
+            return False
+        elif strong == '土' and row[4] == '木':
+            return False
+        elif strong == '金' and row[4] == '木':
+            return False
+        elif strong == '金' and row[4] == '水':
+            return False
+        elif strong == '水' and row[4] == '水':
+            return False
+        elif strong == '水' and row[4] == '金':
+            return False
+    elif month == '04' or month == '05' or month == '06':
+        if strong == '木' and row[4] == '火':
+            return False
+        elif strong == '木' and row[4] == '木':
+            return False
+        elif strong == '火' and row[4] == '土':
+            return False
+        elif strong == '火' and row[4] == '木':
+            return False
+        elif strong == '土' and row[4] == '火':
+            return False
+        elif strong == '土' and row[4] == '土':
+            return False
+        elif strong == '金' and row[4] == '火':
+            return False
+        elif strong == '金' and row[4] == '木':
+            return False
+        elif strong == '水' and row[4] == '火':
+            return False
+        elif strong == '水' and row[4] == '木':
+            return False
+    elif month == '07' or month == '08' or month == '09':
+        if strong == '木' and row[4] == '金':
+            return False
+        elif strong == '木' and row[4] == '木':
+            return False
+        elif strong == '火' and row[4] == '金':
+            return False
+        elif strong == '火' and row[4] == '土':
+            return False
+        elif strong == '土' and row[4] == '金':
+            return False
+        elif strong == '土' and row[4] == '水':
+            return False
+        elif strong == '金' and row[4] == '金':
+            return False
+        elif strong == '金' and row[4] == '土':
+            return False
+        elif strong == '水' and row[4] == '水':
+            return False
+        elif strong == '水' and row[4] == '金':
+            return False
+    elif month == '10' or month == '11' or month == '12':
+        if strong == '木' and row[4] == '水':
+            return False
+        elif strong == '木' and row[4] == '木':
+            return False
+        elif strong == '火' and row[4] == '水':
+            return False
+        elif strong == '火' and row[4] == '金':
+            return False
+        elif strong == '土' and row[4] == '水':
+            return False
+        elif strong == '土' and row[4] == '金':
+            return False
+        elif strong == '金' and row[4] == '水':
+            return False
+        elif strong == '金' and row[4] == '木':
+            return False
+        elif strong == '水' and row[4] == '金':
+            return False
+        elif strong == '水' and row[4] == '水':
+            return False
+
+    return True
 
 
 def main():
@@ -545,9 +643,9 @@ def main():
     kkma = Kkma()
 
     # getting_list함수를 통해 필요한 tag를 추출하여 list 생성
-    f_pos = open('positive-words-ko-v2.txt', 'r')
-    f_neg = open('negative-words-ko-v2.txt', 'r')
-    f_neu = open('neutral-words-ko-v2.txt', 'r')
+    f_pos = open('positive-words-ko.txt', 'r')
+    f_neg = open('negative-words-ko.txt', 'r')
+    f_neu = open('neutral-words-ko.txt', 'r')
 
     list_positive = []
     list_negative = []
@@ -562,8 +660,8 @@ def main():
     start_time = time.time()
 
     birth = '200203011201'
-    hanja = "李"
-    #hanja = "菊"
+    hanja = "李"  # hanja = "菊"
+
     # STEP 1: 성씨 정보 확인
     last_name = get_last_name_info(conn, hanja)
     if last_name[1] == '리':
@@ -572,16 +670,26 @@ def main():
         last_name[1] = '노'
 
     # STEP 2: 사주
-    week, strong = get_saju(conn, birth)
-    print(week, strong)
+    saju = get_saju(conn, birth)
+    if saju is None:
+        print('get saju failed')
+        return
 
     s = conn.cursor()
     # query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja;'
-    query = "SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja WHERE is_naming_hanja=1 AND reading NOT IT ('흔', '확', '렴', '린', '역', '암', '감', '락')";
+    query = """
+    SELECT hanja,reading,strokes,add_strokes,five_type
+    FROM naming_hanja
+    WHERE is_naming_hanja=1
+    AND reading
+    NOT IN ('렴', '린', '랑', '려', '령', '애', '락')
+    """
     # last_name = last_name[0]
+    total_list = 0
     for row in s.execute(query):  # ('架', 9, None, '木')
-        #TODO: FIXME: check saju!!!!!!  여기서 보충해주는거 제외하고 버려
-        # row : middle_name
+        if type_check_with_month(saju, row) is False:
+            continue
+
         name1 = '%s%s' % (last_name[1], row[1])
         pos = kkma.pos(name1)
         if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
@@ -591,10 +699,12 @@ def main():
         if len(name_list) <= 0:
             continue
         print(name_list, len(name_list))
+        total_list += len(name_list)
         # print(filtered_list, len(filtered_list))
 
     # END
     print("--- %s seconds ---" % (time.time() - start_time))
+    print('Total: ', total_list)
     f_pos.close()
     f_neg.close()
     f_neu.close()
