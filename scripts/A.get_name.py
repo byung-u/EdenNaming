@@ -36,6 +36,14 @@ def check_five_type(name_type):
         return True
     elif name_type == '木水金':
         return True
+    elif name_type == '木土火':
+        return True
+    elif name_type == '木火水':
+        return True
+    elif name_type == '木水火':
+        return True
+    elif name_type == '木木水':
+        return True
     elif name_type == '火木木':  # 火
         return True
     elif name_type == '火木水':
@@ -51,6 +59,14 @@ def check_five_type(name_type):
     elif name_type == '火土火':
         return True
     elif name_type == '火土土':
+        return True
+    elif name_type == '火金土':
+        return True
+    elif name_type == '火土金':
+        return True
+    elif name_type == '火水木':
+        return True
+    elif name_type == '火木土':
         return True
     elif name_type == '土金金':  # 土
         return True
@@ -68,6 +84,16 @@ def check_five_type(name_type):
         return True
     elif name_type == '土土火':
         return True
+    elif name_type == '土水金':
+        return True
+    elif name_type == '土金火':
+        return True
+    elif name_type == '土木火':
+        return True
+    elif name_type == '土火金':
+        return True
+    elif name_type == '土土土':
+        return True
     elif name_type == '金金水':  # 金
         return True
     elif name_type == '金金土':
@@ -84,6 +110,14 @@ def check_five_type(name_type):
         return True
     elif name_type == '金土土':
         return True
+    elif name_type == '金木水':
+        return True
+    elif name_type == '金水土':
+        return True
+    elif name_type == '金火土':
+        return True
+    elif name_type == '金土水':
+        return True
     elif name_type == '水金金':  # 水
         return True
     elif name_type == '水金水':
@@ -99,6 +133,16 @@ def check_five_type(name_type):
     elif name_type == '水水金':
         return True
     elif name_type == '水水木':
+        return True
+    elif name_type == '水火木':
+        return True
+    elif name_type == '水木金':
+        return True
+    elif name_type == '水土金':
+        return True
+    elif name_type == '水金木':
+        return True
+    elif name_type == '水水水':
         return True
     else:  # not in  水火土金木 rule
         return False
@@ -343,11 +387,14 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
 
     if (s1[0] == s2[0] == s3[0]):  # 김구관
         return False
+    elif s2[0] == s3[0] :  # 신류려
+            return False
 
     if (s2[1] == 'ㅐ'):  # 김해선 -> 김혜선
         return False
     elif (s3[1] == 'ㅔ'):  # 김지에 -> 김지애
         return False
+
 
     if (s2[0] == s3[0]):  # 이름의 자음이 같은 경우에 모음 확인
         if (s2[1] == 'ㅜ' and s3[1] == 'ㅜ'):  # 최준주
@@ -394,7 +441,7 @@ def get_name_list(conn, last_name, m1):
     SELECT hanja,reading,strokes,add_strokes,five_type
     FROM naming_hanja
     WHERE is_naming_hanja=1 AND reading
-    NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천', '택', '탁', '태', '외')
+    NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천', '택', '탁', '태', '외', '사', '매', '읍', '소')
     """
     for m2 in s.execute(query):  # ('架', 9, None, '木')
         if m1[0] == m2[0]:
@@ -623,7 +670,7 @@ def main():
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
-    NOT IN ('각', '과', '국', '렴', '린', '랑', '려', '령', '락', '량', '련', '복', '애', '엄', '열', '오', '요', '빈', '표', '필', '탁', '회', '후')
+    NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락', '량', '련', '목', '복', '애', '엄', '열', '오', '요', '빈', '표', '필', '탁', '회', '후')
     """
     total_list = 0
     for row in s.execute(query):  # ('架', 9, None, '木')
