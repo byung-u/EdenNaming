@@ -6,9 +6,11 @@ import sqlite3
 # /usr/local/lib/python3.6/site-packages/hangul_utils
 from hangul_utils import hangul_len, split_syllable_char
 from konlpy.tag import Kkma
+from block_list import BLOCK_LIST
 
 
-list_tag = [u'NNG', u'VV', u'VA', u'VXV', u'UN']
+LIST_TAG = [u'NNG', u'VV', u'VA', u'VXV', u'UN']
+
 
 
 def get_last_name_info(conn, hanja):
@@ -16,15 +18,12 @@ def get_last_name_info(conn, hanja):
     query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja where hanja="%s"' % hanja
     s.execute(query)
     row = s.fetchone()
-
     return list(row)
 
 
 # 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
 # 토 -> 목 -> 금 -> 화 -> 수 -> 토 (흉)
 def check_five_type(name_type):
-    # TODO : 현재는 같거나 생인 경우에만 통과 시킴
-    #        다른 케이스가 있는지 추가 확인 필요
     # http://sajuplus.tistory.com/235
     if name_type == '木木水':  # 木
         return True
@@ -254,8 +253,8 @@ def get_saju(conn, birth):
     secha, wolgeon, iljin = get_secha_wolgeon_iljin(conn, year, month, day)
     siju = get_siju(iljin[0], int(hour))  # siju : hour
     # print('[DBG2] hour, day, month, year')
-    print('[DBG2]', siju[0], iljin[0], wolgeon[0], secha[0])
-    print('[DBG3]', siju[1], iljin[1], wolgeon[1], secha[1])
+    # print('[DBG2]', siju[0], iljin[0], wolgeon[0], secha[0])
+    # print('[DBG3]', siju[1], iljin[1], wolgeon[1], secha[1])
 
     siju_type = get_5types(siju[0], siju[1])
     if siju_type is None:
@@ -269,8 +268,8 @@ def get_saju(conn, birth):
     secha_type = get_5types(secha[0], secha[1])
     if secha_type is None:
         return None
-    print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
-    print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
+    # print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
+    # print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
 
     weak, strong = get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type)
     saju = {
@@ -351,7 +350,7 @@ def getting_list(filename, listname, kkma):
             if i[1] == u'SW':
                 if i[0] in [u'♡', u'♥']:
                     listname.append(i[0])
-            if i[1] in list_tag:
+            if i[1] in LIST_TAG:
                 listname.append(i[0])
         if not line:
             break
@@ -423,17 +422,26 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
     return True
 
 
-def get_name_list(conn, last_name, m1, kkma, list_positive, list_negative, list_neutral, ALL):
+def get_name_list(conn, last_name, m1):
+#def get_name_list(conn, last_name, m1, kkma, list_positive, list_negative, list_neutral, ALL):
     name_list = []
     s = conn.cursor()
     query = """
     SELECT hanja,reading,strokes,add_strokes,five_type
     FROM naming_hanja
-    WHERE is_naming_hanja=1 AND reading NOT IN ('최', '충')
+    WHERE is_naming_hanja=1 AND reading NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천', '택', '탁', '태')
     """
     for m2 in s.execute(query):  # ('架', 9, None, '木')
         if m1[0] == m2[0]:
             continue
+
+        name2 = '%s%s' % (m1[1], m2[1])
+        try:
+            if BLOCK_LIST[name2] == 1:
+                continue
+        except:
+            pass
+
         name_type = '%s%s%s' % (last_name[4], m1[4], m2[4])
         if check_five_type(name_type) is False:
             continue
@@ -449,11 +457,9 @@ def get_name_list(conn, last_name, m1, kkma, list_positive, list_negative, list_
 
         if check_hangul_hard_pronounce(last_name, m1, m2) is False:
             continue
-
-        name2 = '%s%s' % (m1[1], m2[1])
-        pos = kkma.pos(name2)
-        if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
-            continue
+        #pos = kkma.pos(name2)
+        #if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
+        #    continue
         temp_name = '%s%s%s' % (last_name[1], m1[1], m2[1])
         name_list.append(temp_name)
     return name_list
@@ -501,7 +507,7 @@ def emotion_check(pos, list_positive, list_negative, list_neutral, ALL):
         if i[1] == u'SW':
             if i[0] in [u'♡', u'♥']:
                 meaning_res.append(i[0])
-        if i[1] in list_tag:
+        if i[1] in LIST_TAG:
             meaning_res.append(i[0])
 
     # naive bayes 값 계산
@@ -640,27 +646,27 @@ def type_check_with_month(saju, row):
 
 def main():
     conn = sqlite3.connect('naming_korean.db')
-    kkma = Kkma()
+    #kkma = Kkma()
 
     # getting_list함수를 통해 필요한 tag를 추출하여 list 생성
-    f_pos = open('positive-words-ko.txt', 'r')
-    f_neg = open('negative-words-ko.txt', 'r')
-    f_neu = open('neutral-words-ko.txt', 'r')
-
-    list_positive = []
-    list_negative = []
-    list_neutral = []
-
-    list_positive = getting_list(f_pos, list_positive, kkma)
-    list_negative = getting_list(f_neg, list_negative, kkma)
-    list_neutral = getting_list(f_neu, list_neutral, kkma)
-    ALL = len(set(list_positive)) + len(set(list_negative)) + len(set(list_neutral))
+    #f_pos = open('positive-words-ko.txt', 'r')
+    #f_neg = open('negative-words-ko.txt', 'r')
+    #f_neu = open('neutral-words-ko.txt', 'r')
+#
+#    list_positive = []
+#    list_negative = []
+#    list_neutral = []
+#
+#    list_positive = getting_list(f_pos, list_positive, kkma)
+#    list_negative = getting_list(f_neg, list_negative, kkma)
+#    list_neutral = getting_list(f_neu, list_neutral, kkma)
+#    ALL = len(set(list_positive)) + len(set(list_negative)) + len(set(list_neutral))
 
     # START
     start_time = time.time()
 
     birth = '200203011201'
-    hanja = "李"  # hanja = "菊"
+    hanja = "金"  # 菊 李
 
     # STEP 1: 성씨 정보 확인
     last_name = get_last_name_info(conn, hanja)
@@ -668,6 +674,8 @@ def main():
         last_name[1] = '이'
     elif last_name[1] == '로':
         last_name[1] = '노'
+    elif last_name[1] == '금':
+        last_name[1] = '김'
 
     # STEP 2: 사주
     saju = get_saju(conn, birth)
@@ -682,32 +690,32 @@ def main():
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
-    NOT IN ('렴', '린', '랑', '려', '령', '애', '락')
+    NOT IN ('각', '과', '국', '렴', '린', '랑', '려', '령', '락', '량', '련', '애', '엄', '열', '오', '요', '빈', '표', '필', '탁', '회', '후')
     """
-    # last_name = last_name[0]
     total_list = 0
     for row in s.execute(query):  # ('架', 9, None, '木')
-        if type_check_with_month(saju, row) is False:
-            continue
-
         name1 = '%s%s' % (last_name[1], row[1])
-        pos = kkma.pos(name1)
-        if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
-            # print('[Pass]: ', name1)
-            continue
-        name_list = get_name_list(conn, last_name, row, kkma, list_positive, list_negative, list_neutral, ALL)
+        try:
+            if BLOCK_LIST[name1] == 1:
+                continue
+        except:
+            pass
+        #pos = kkma.pos(name1)
+        #if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
+        #    continue
+        #name_list = get_name_list(conn, last_name, row, kkma, list_positive, list_negative, list_neutral, ALL)
+        name_list = get_name_list(conn, last_name, row)
         if len(name_list) <= 0:
             continue
-        print(name_list, len(name_list))
+        print(name_list)
         total_list += len(name_list)
-        # print(filtered_list, len(filtered_list))
 
     # END
     print("--- %s seconds ---" % (time.time() - start_time))
     print('Total: ', total_list)
-    f_pos.close()
-    f_neg.close()
-    f_neu.close()
+    #f_pos.close()
+    #f_neg.close()
+    #f_neu.close()
     conn.close()  # sqlite3 close
     return
 
