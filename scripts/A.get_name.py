@@ -5,12 +5,7 @@ import sqlite3
 
 # /usr/local/lib/python3.6/site-packages/hangul_utils
 from hangul_utils import hangul_len, split_syllable_char
-from konlpy.tag import Kkma
 from block_list import BLOCK_LIST
-
-
-LIST_TAG = [u'NNG', u'VV', u'VA', u'VXV', u'UN']
-
 
 
 def get_last_name_info(conn, hanja):
@@ -341,41 +336,6 @@ def check_plus_minus_hanja(conn, n1, n2, n3):
     return True
 
 
-def getting_list(filename, listname, kkma):
-    while 1:
-        line = filename.readline()
-        string = str(line)
-        line_parse = kkma.pos(string)
-        for i in line_parse:
-            if i[1] == u'SW':
-                if i[0] in [u'♡', u'♥']:
-                    listname.append(i[0])
-            if i[1] in LIST_TAG:
-                listname.append(i[0])
-        if not line:
-            break
-    return listname
-
-
-# naive bayes classifier + smoothing
-def naive_bayes_classifier(test, train, all_count):
-    counter = 0
-    list_count = []
-    for i in test:
-        for j in range(len(train)):
-            if i == train[j]:
-                counter = counter + 1
-        list_count.append(counter)
-        counter = 0
-    list_naive = []
-    for i in range(len(list_count)):
-        list_naive.append((list_count[i]+1)/float(len(train)+all_count))
-    result = 1
-    for i in range(len(list_naive)):
-        result *= float(round(list_naive[i], 6))
-    return float(result)*float(1.0/3.0)
-
-
 def check_hangul_hard_pronounce(last_name, m1, m2):
     s1 = split_syllable_char(last_name[1])
     s2 = split_syllable_char(m1[1])
@@ -423,7 +383,6 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
 
 
 def get_name_list(conn, last_name, m1):
-#def get_name_list(conn, last_name, m1, kkma, list_positive, list_negative, list_neutral, ALL):
     name_list = []
     s = conn.cursor()
     query = """
@@ -457,9 +416,7 @@ def get_name_list(conn, last_name, m1):
 
         if check_hangul_hard_pronounce(last_name, m1, m2) is False:
             continue
-        #pos = kkma.pos(name2)
-        #if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
-        #    continue
+
         temp_name = '%s%s%s' % (last_name[1], m1[1], m2[1])
         name_list.append(temp_name)
     return name_list
@@ -499,26 +456,6 @@ def get_total_strokes(n1, n2, n3=None):
         total_strokes = n1_strk + n2_strk + n3_strk
         # print(n1[2], n1[3], n2[2], n2[3], n3[2], n3[3], '-> ', total_strokes)
     return total_strokes
-
-
-def emotion_check(pos, list_positive, list_negative, list_neutral, ALL):
-    meaning_res = []
-    for i in pos:
-        if i[1] == u'SW':
-            if i[0] in [u'♡', u'♥']:
-                meaning_res.append(i[0])
-        if i[1] in LIST_TAG:
-            meaning_res.append(i[0])
-
-    # naive bayes 값 계산
-    result_pos = naive_bayes_classifier(meaning_res, list_positive, ALL)
-    result_neg = naive_bayes_classifier(meaning_res, list_negative, ALL)
-    result_neu = naive_bayes_classifier(meaning_res, list_neutral, ALL)
-
-    if (result_pos > result_neg and result_pos > result_neu):  # 긍정
-        return True
-    else:  # 부정, 중립
-        return False
 
 
 """
@@ -646,21 +583,6 @@ def type_check_with_month(saju, row):
 
 def main():
     conn = sqlite3.connect('naming_korean.db')
-    #kkma = Kkma()
-
-    # getting_list함수를 통해 필요한 tag를 추출하여 list 생성
-    #f_pos = open('positive-words-ko.txt', 'r')
-    #f_neg = open('negative-words-ko.txt', 'r')
-    #f_neu = open('neutral-words-ko.txt', 'r')
-#
-#    list_positive = []
-#    list_negative = []
-#    list_neutral = []
-#
-#    list_positive = getting_list(f_pos, list_positive, kkma)
-#    list_negative = getting_list(f_neg, list_negative, kkma)
-#    list_neutral = getting_list(f_neu, list_neutral, kkma)
-#    ALL = len(set(list_positive)) + len(set(list_negative)) + len(set(list_neutral))
 
     # START
     start_time = time.time()
@@ -700,10 +622,6 @@ def main():
                 continue
         except:
             pass
-        #pos = kkma.pos(name1)
-        #if emotion_check(pos, list_positive, list_negative, list_neutral, ALL) is False:
-        #    continue
-        #name_list = get_name_list(conn, last_name, row, kkma, list_positive, list_negative, list_neutral, ALL)
         name_list = get_name_list(conn, last_name, row)
         if len(name_list) <= 0:
             continue
@@ -713,9 +631,6 @@ def main():
     # END
     print("--- %s seconds ---" % (time.time() - start_time))
     print('Total: ', total_list)
-    #f_pos.close()
-    #f_neg.close()
-    #f_neu.close()
     conn.close()  # sqlite3 close
     return
 
