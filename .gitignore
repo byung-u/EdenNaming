@@ -90,3 +90,7 @@ ENV/
 
 settings.py
 *.db
+migrations/
+__pycache__/
+static/
+
