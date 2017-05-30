@@ -93,4 +93,5 @@ settings.py
 migrations/
 __pycache__/
 static/
-
+*.pyc
+*.bak
