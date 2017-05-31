@@ -518,6 +518,33 @@ def check_plus_minus_hangul(conn, last_name, m1, m2):
     return True
 
 
+def check_two_words_hard_pronounce(n1, n2):
+
+    if n1 == '김' and n2 == '이':  # 김이송
+        return False
+    elif n1 == '김' and n2 == '의':  # 김의림
+        return False
+
+    s1 = split_syllable_char(n1)
+    s2 = split_syllable_char(n2)
+    if (s1[0] == 'ㄱ' and s2[0] == 'ㄹ'):  # 김려원
+        return False
+
+    if len(s1) == 3:
+        if s1[0] == 'ㄱ' and s1[2] == 'ㅁ' and s2[0] == 'ㄹ':  # 김려원
+            return False
+        elif s1[2] == 'ㄹ' and s2[0] == 'ㅇ':  # 갈이무
+            return False
+        elif s1[2] == 'ㅁ' and s2[0] == 'ㅇ':  # 남유현
+            return False
+        elif s1[2] == 'ㄹ' and s2[0] == 'ㄴ':  # 갈나성
+            return False
+    if len(s1) == 3 and len(s2) == 3:
+        if s1[1] == 'ㅕ' and s1[2] == 'ㅇ' and s2[1] == 'ㅡ' and s2[2] == 'ㅇ':  # 경흥원
+            return False
+    return True
+
+
 def check_all_name_hard_pronounce(last_name, m1, m2):
     s1 = split_syllable_char(last_name[1])
     s2 = split_syllable_char(m1[1])
@@ -563,9 +590,14 @@ def check_all_name_hard_pronounce(last_name, m1, m2):
             return False
         elif (s2[1] == 'ㅑ' and s2[2] == 'ㅇ' and s3[1] == 'ㅕ' and s3[2] == 'ㅁ'):  # 최양념
             return False
+        elif (s2[1] == 'ㅑ' and s2[2] == 'ㅇ' and s3[1] == 'ㅑ' and s3[2] == 'ㅇ'):  # 최양량
+            return False
         elif (s2[2] == 'ㄱ' and s3[2] == 'ㄱ'):  # 이혁탁
             return False
         elif (s2[2] == 'ㄴ' and s3[2] == 'ㄴ'):  # 이완린
+            return False
+    elif len(s2) == 3 and len(s3) == 2:
+        if (s2[2] == 'ㄹ' and s3[1] == 'ㅖ'):  # 김설혜
             return False
 
     return True
@@ -589,10 +621,11 @@ def get_name_list(conn, last_name, m1, saju):
     SELECT hanja,reading,strokes,add_strokes,five_type
     FROM naming_hanja
     WHERE is_naming_hanja=1 AND reading
-    NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천', '택', '탁', '태', '외', '사', '매', '읍', '소')
+    NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천',
+    '택', '탁', '태', '외', '사', '매', '읍', '소', '종', '순', '요', '자')
     """
     for m2 in s.execute(query):  # ('架', 9, None, '木')
-        if m1[0] == m2[0]:
+        if m1[0] == m2[0]:  # 김소소
             continue
 
         name2 = '%s%s' % (m1[1], m2[1])
@@ -811,7 +844,9 @@ def main():
 
     # TEST data
     birth = '200103010310'  # '200203011201'
-    hanja = "金"  # 菊 李
+    # hanja = "李" "金"  # 菊 李
+    # 賈 簡 葛 甘 剛 姜 康 强 江 堅 甄 京 慶 景 耿 桂 顧 高 曲 谷 公 孔 郭 管 關 喬 橋 丘 仇 具 邱 國 菊 鞠 弓 鴌 權 斤 琴 奇 箕 吉 金 罗 羅 南 乃 奈 盧
+    hanja = "南"  # 乃 奈 盧
     # 성씨 정보
     last_name = get_last_name_info(conn, hanja)
 
@@ -831,11 +866,14 @@ def main():
     NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락',
     '량', '련', '목', '복', '해', '엄', '열', '오', '요', '왕', '욱', '읍',
     '빈', '표', '필', '탁', '회', '후', '흠',
-    '균')
+    '균', '옥', '류', '료', '안')
     """
     total_name_list = []
     cnt = 0
     for row in s.execute(query):  # ('架', 9, None, '木')
+        if last_name[1] == row[1]:  # 장장호
+            continue
+
         name1 = '%s%s' % (last_name[1], row[1])
         if check_name(name1) is False:
             continue
@@ -852,6 +890,9 @@ def main():
         if ts == 0 or check_81_suri(conn, ts) is False:  # (홍+길) 동
             continue
 
+        if check_two_words_hard_pronounce(last_name[1], row[1]) is False:
+            continue
+
         cnt += 1
         name_list = get_name_list(conn, last_name, row, saju)
         if name_list is None:
@@ -864,6 +905,9 @@ def main():
     print("--- %s seconds ---" % (time.time() - start_time))  # END
     temp = array_remove_duplicates(total_name_list)
     print(temp, len(temp))
+    # for i in range(len(temp)):
+    #    if temp[i][1] == '염':
+    #       print(temp[i])
     conn.close()  # db close
     return
 
