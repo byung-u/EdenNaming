@@ -1,11 +1,11 @@
 Backend
 =======
 - [x] 사주 (생년월일)
-- [ ] 불용한자에 대해 SELECT 하지 않도록 flag 변경 추가
+- [x] 불용한자에 대해 SELECT 하지 않도록 flag 변경 추가
 - [ ] 세차/월정/일진에서 윤달에는 월건이 없어서 이를 예외처리했는데 평달의 월건으로 추가 수정 필요 (e.g. 20141110)
 - [x] 자원 오행 금수목토화 극성확인
 - [x] 음오행 금수목토화
-- [ ] 사주 보충기운 추가 (참고: http://ssolmon.co.kr/name/name_06.html)
+- [x] 사주 보충기운 추가 (참고: http://ssolmon.co.kr/name/name_06.html)
 
 Frontend
 ========
