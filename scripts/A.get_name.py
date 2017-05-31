@@ -387,14 +387,13 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
 
     if (s1[0] == s2[0] == s3[0]):  # 김구관
         return False
-    elif s2[0] == s3[0] :  # 신류려
+    elif s2[0] == s3[0]:  # 신류려
             return False
 
     if (s2[1] == 'ㅐ'):  # 김해선 -> 김혜선
         return False
     elif (s3[1] == 'ㅔ'):  # 김지에 -> 김지애
         return False
-
 
     if (s2[0] == s3[0]):  # 이름의 자음이 같은 경우에 모음 확인
         if (s2[1] == 'ㅜ' and s3[1] == 'ㅜ'):  # 최준주
@@ -455,18 +454,23 @@ def get_name_list(conn, last_name, m1):
             pass
 
         name_type = '%s%s%s' % (last_name[4], m1[4], m2[4])
+        # STEP 4: 오행의 배치 관계
         if check_five_type(name_type) is False:
             continue
 
+        # STEP 2: 수리영동 조직관계
+        # STEP 7: 수리 역상의 관계
         if check_total_stroke(conn, last_name, m1, m2) is False:
             continue
 
+        # STEP 3: 음양 배열 관계
         if check_plus_minus_hangul(conn, last_name, m1, m2) is False:
             continue
 
         if check_plus_minus_hanja(conn, last_name, m1, m2) is False:
             continue
 
+        # STEP 6: 음령 오행의 역상 관계
         if check_hangul_hard_pronounce(last_name, m1, m2) is False:
             continue
 
@@ -477,18 +481,6 @@ def get_name_list(conn, last_name, m1):
         return None
 
     return name_list
-
-
-"""
-1: 선천명과의 합국 조화 관계 (생년월일시를 기준으로 사주팔자법)
-2: 수리영동 조직관계
-3: 음양 배열 관계
-4: 오행의 배치 관계
-5: 자의 정신 관계
-6: 음령 오행의 역상 관계
-7: 수리 역상의 관계
-8: 어휘 어감의 조정 관계
-"""
 
 
 def get_total_strokes(n1, n2, n3=None):
@@ -643,10 +635,10 @@ def main():
     conn = sqlite3.connect('naming_korean.db')
 
     # TEST data
-    birth = '200203011201'
+    birth = '200203010501'  # '200203011201'
     hanja = "金"  # 菊 李
 
-    # STEP 1: 성씨 정보 확인
+    # 성씨 정보
     last_name = get_last_name_info(conn, hanja)
     if last_name[1] == '리':
         last_name[1] = '이'
@@ -657,7 +649,7 @@ def main():
     elif last_name[1] == '림':
         last_name[1] = '임'
 
-    # STEP 2: 사주
+    # STEP 1: 선천명과의 합국 조화 관계
     saju = get_saju(conn, birth)
     if saju is None:
         print('get saju failed')
@@ -665,12 +657,15 @@ def main():
 
     s = conn.cursor()
     # query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja;'
+    # STEP 8: 어휘 어감의 조정 관계
     query = """
     SELECT hanja,reading,strokes,add_strokes,five_type
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
-    NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락', '량', '련', '목', '복', '애', '엄', '열', '오', '요', '빈', '표', '필', '탁', '회', '후')
+    NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락',
+    '량', '련', '목', '복', '애', '엄', '열', '오', '요', '왕', '욱', '읍',
+    '빈', '표', '필', '탁', '회', '후', '흠')
     """
     total_list = 0
     for row in s.execute(query):  # ('架', 9, None, '木')
@@ -690,6 +685,19 @@ def main():
     print('Total: ', total_list)
     conn.close()  # db close
     return
+
+
+"""
+[o] 1: 선천명과의 합국 조화 관계
+[o] 2: 수리영동 조직관계
+[o] 7: 수리 역상의 관계
+[o] 3: 음양 배열 관계
+[o] 4: 오행의 배치 관계
+[o] 8: 어휘 어감의 조정 관계
+[o] 6: 음령 오행의 역상 관계
+
+[o] 5: 자의 정신 관계
+"""
 
 
 if __name__ == '__main__':
