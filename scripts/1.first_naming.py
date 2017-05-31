@@ -51,16 +51,16 @@ def insert_query_naming_hanja(hanja, reading, conn):
 # Supreme Court
 def insert_sc_nameing_hanja(conn, reading, naming_char, naming_char_len):
     if len(reading) != 1:
-        #print('[Insert Naming Hanja] ', [reading], 'pass')
+        # print('[Insert Naming Hanja] ', [reading], 'pass')
         return
 
     if naming_char_len == 1 and naming_char[0] == '–':
-        #print('[Insert Naming Hanja] ', [reading], '– pass')
+        # print('[Insert Naming Hanja] ', [reading], '– pass')
         return
 
     for i in range(naming_char_len):
         if len(naming_char[i]) > 1:
-            exception_char = naming_char[i].replace('(', ' ').replace(')','').split()
+            exception_char = naming_char[i].replace('(', ' ').replace(')', '').split()
             for j in range(len(exception_char)):
                 insert_query_naming_hanja(exception_char[j], reading, conn)
         else:
@@ -215,13 +215,13 @@ def main():
     conn = create_naming_hanja_table()
 
     # STEP 1: get 'Supreme Court of Korea' naming hanja list
-    #get_sc_naming_hanja(conn)
+    get_sc_naming_hanja(conn)
 
     # STEP 2: filterling possible naming hanja list
-    #check_possible_naming(conn)
+    check_possible_naming(conn)
 
     # STEP 3: set detail hanja information
-    # set_detail_info(conn)
+    set_detail_info(conn)
 
     # STEP 4: select one of 5 types (木 火 水 土 金)
     set_five_type(conn)

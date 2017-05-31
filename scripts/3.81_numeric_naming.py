@@ -77,7 +77,7 @@ def insert_ancapone(conn):  # http://m.blog.daum.net/ancapone/280
 
 
 def insert_busan(conn):  # busan jakmyungso
-# http://blog.naver.com/PostView.nhn?blogId=nuriname&logNo=220786794655&categoryNo=51&parentCategoryNo=-1&viewDate=&currentPage=&postListTopCurrentPage=&isAfterWrite=true
+    # http://blog.naver.com/PostView.nhn?blogId=nuriname&logNo=220786794655&categoryNo=51&parentCategoryNo=-1&viewDate=&currentPage=&postListTopCurrentPage=&isAfterWrite=true
     with open('81_c') as f:
         for idx, line in enumerate(f):
             if idx % 2 == 0:
