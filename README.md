@@ -25,10 +25,11 @@ Naming Works
 #### SITE
 - 갑자: https://namu.wiki/w/갑자
 - 인명한자: http://help.scourt.go.kr/nm/img/hanja/hanja_2015.pdf
-- 긍정어, 부정어 분류: http://newpower.tistory.com/127
+- 긍정어, 부정어 분류: http://newpower.tistory.com/127 
+- 긍정, 부정 데이터 https://github.com/The-ECG/BigData1_1.3.3_Text-Mining/blob/master/dictionary.zip
+  - 모든 이름을 긍정/부정 비교하다보니 너무 느려서 관련 로직은 제거
 
 # 감정 데이터
-https://github.com/The-ECG/BigData1_1.3.3_Text-Mining/blob/master/dictionary.zip
 
 
 VIM command
