@@ -6,6 +6,10 @@ import sqlite3
 # /usr/local/lib/python3.6/site-packages/hangul_utils
 from hangul_utils import hangul_len, split_syllable_char
 from block_list import BLOCK_LIST
+from words_list import WORDS_LIST
+
+SHINGANG = 1
+SHINYACK = 0
 
 
 def get_last_name_info(conn, hanja):
@@ -13,7 +17,17 @@ def get_last_name_info(conn, hanja):
     query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja where hanja="%s"' % hanja
     s.execute(query)
     row = s.fetchone()
-    return list(row)
+    last_name = list(row)
+    if last_name[1] == '리':
+        last_name[1] = '이'
+    elif last_name[1] == '로':
+        last_name[1] = '노'
+    elif last_name[1] == '금':
+        last_name[1] = '김'
+    elif last_name[1] == '림':
+        last_name[1] = '임'
+
+    return last_name
 
 
 # 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
@@ -42,8 +56,6 @@ def check_five_type(name_type):
         return True
     elif name_type == '木水火':
         return True
-    elif name_type == '木木水':
-        return True
     elif name_type == '火木木':  # 火
         return True
     elif name_type == '火木水':
@@ -61,8 +73,6 @@ def check_five_type(name_type):
     elif name_type == '火土土':
         return True
     elif name_type == '火金土':
-        return True
-    elif name_type == '火土金':
         return True
     elif name_type == '火水木':
         return True
@@ -239,7 +249,6 @@ def get_h10gan_5types(h10gan):
 
 def get_h12ji_5types(h12ji):
     if h12ji == '子' or h12ji == '亥':
-        print('h12ji: ', h12ji,  '水')
         return '水'
     elif h12ji == '寅' or h12ji == '卯':
         return '木'
@@ -264,7 +273,13 @@ def get_5types(h10gan, h12ji):
     return '%s%s' % (res_h10gan, res_h12ji)
 
 
-def get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type):
+def get_energy_saju(energy):
+    return max(energy, key=energy.get)
+    # last_two_weak = (sorted(energy.items(), key=lambda x: x[1])[:2])
+    # return last_two_weak, max(energy, key=energy.get)
+
+
+def count_5hang(siju_type, iljin_type, wolgeon_type, secha_type):
     energy = {
             '木': 0,
             '火': 0,
@@ -280,10 +295,118 @@ def get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type):
     energy[wolgeon_type[1]] += 1
     energy[secha_type[0]] += 1
     energy[secha_type[1]] += 1
-    return min(energy, key=energy.get), max(energy, key=energy.get)
+    return energy
+
+
+# 木火土金水
+def strong_ilgan(ilgan_type):
+    if ilgan_type == "木":
+        return "火"
+    elif ilgan_type == "火":
+        return "土"
+    elif ilgan_type == "土":
+        return "金"
+    elif ilgan_type == "金":
+        return "水"
+    elif ilgan_type == "水":
+        return "木"
+    else:
+        return False
+
+
+def weak_ilgan(ilgan_type):
+    if ilgan_type == "土":
+        return "木"
+    elif ilgan_type == "木":
+        return "金"
+    elif ilgan_type == "金":
+        return "火"
+    elif ilgan_type == "火":
+        return "水"
+    elif ilgan_type == "水":
+        return "土"
+    else:
+        return False
+
+
+def check_ilgi_ilgan(ilgi_type, ilgan_type):
+    # 일지가 일간을 지탱해줘야하기 때문에 일지가 일간을 강하게 해주는지 확인
+    if ilgan_type == "木" and ilgi_type == "火":
+        return True
+    elif ilgan_type == "火" and ilgi_type == "土":
+        return True
+    elif ilgan_type == "土" and ilgi_type == "金":
+        return True
+    elif ilgan_type == "金" and ilgi_type == "水":
+        return True
+    elif ilgan_type == "水" and ilgi_type == "木":
+        return True
+    else:
+        return False
+
+
+def check_shin(iljin, iljin_type, energy):
+    # 날씨가 추움, 더움, 건조, 습함에 대한 정확한 날짜 기준이 없으므로 미사용
+    # 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
+    # 토 -> 목 -> 금 -> 화 -> 수 -> 토 (흉)
+    ilgan_type = iljin_type[0]
+
+    # 일간을 강하게하거나 약하게 하는 오행을 확인해서 처리
+    s = strong_ilgan(ilgan_type)
+    w = weak_ilgan(ilgan_type)
+    if energy[s] > 3:
+        return SHINGANG  # 1
+    elif energy[s] > energy[w]:
+        return SHINGANG  # 1
+    elif energy[s] < energy[w]:
+        return SHINYACK  # 0
+
+    # 일지를 강하게하거나 약하게 하는 오행을 확인해서 처리
+    ilgi_type = iljin_type[1]
+    s = strong_ilgan(ilgi_type)
+    w = weak_ilgan(ilgi_type)
+    if energy[s] > energy[w]:
+        return SHINGANG  # 1
+    elif energy[s] < energy[w]:
+        return SHINYACK  # 0
+
+    # 일지가 일간을 강하게 하는 오행인가?
+    if check_ilgi_ilgan(ilgi_type, ilgan_type) is True:
+        return SHINGANG  # 1
+    else:
+        return SHINYACK  # 0
+
+
+def get_strong_ilgan_type(ilgan_type):
+    return strong_ilgan(ilgan_type)
+
+
+def get_weak_ilgan_type(ilgan_type):
+    return weak_ilgan(ilgan_type)
+
+
+def support_health(weak):
+    if weak == "木":
+        return "水"
+    elif weak == "火":
+        return "木"
+    elif weak == "土":
+        return "火"
+    elif weak == "金":
+        return "土"
+    elif weak == "水":
+        return "金"
+    else:
+        return None, None
+
+
+def array_remove_duplicates(l):
+    return list(set(l))
 
 
 def get_saju(conn, birth):
+    support_type = []
+
     year = birth[0:4]
     month = birth[4:6]
     day = birth[6:8]
@@ -303,16 +426,48 @@ def get_saju(conn, birth):
     secha_type = get_5types(secha[0], secha[1])
     if secha_type is None:
         return None
-    # print('[DBG1]', year, month, day, hour)
-    # print('[DBG2] hour, day, month, year')
-    # print('[DBG2]', siju[0], iljin[0], wolgeon[0], secha[0])
-    # print('[DBG3]', siju[1], iljin[1], wolgeon[1], secha[1])
-    # print('[DBG4]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
-    # print('[DBG4]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
+    print('[DBG] -----------')
+    print('[DBG] 시 일 월 년')
+    print('[DBG] -----------')
+    print('[D간]', siju[0], iljin[0], wolgeon[0], secha[0])
+    print('[D지]', siju[1], iljin[1], wolgeon[1], secha[1])
+    print('[DBG] -----------')
+    print('[DBG]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
+    print('[DBG]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
+    print('[DBG] -----------')
 
-    weak, strong = get_energy_saju(siju_type, iljin_type, wolgeon_type, secha_type)
+    energy = count_5hang(siju_type, iljin_type, wolgeon_type, secha_type)
+    # 신강 or 신약
+    shin = check_shin(iljin, iljin_type, energy)
+    if shin == SHINGANG:
+        # 일간을 약하게
+        result_shin = get_weak_ilgan_type(iljin_type[0])
+        print('신강 -> 약하게', result_shin)
+    else:  # SHINYACK
+        # 일간을 강하게
+        result_shin = get_strong_ilgan_type(iljin_type[0])
+        print('신약 -> 강하게', result_shin)
+
+    # 1. 신약, 신강에 따른 보충
+    support_type.append(result_shin)
+    weak_type = sorted(energy.items(), key=lambda x: x[1])
+    sh = support_health(weak_type[0][0])
+    if sh is None:
+        return None
+    # 2. 약한 기운에 따라 건강을 보충
+    support_type.append(sh)
+    # support_type.append(weak_type[0][0])
+    # support_type.append(weak_type[1][0])
+
+    # print('s1,s2 =', s1, s2)
+    # print(weak_type[:2])
+    support_type = array_remove_duplicates(support_type)
+
+    strong = get_energy_saju(energy)
+    # print(weaks[0][0], weaks[1][0], strong)
     saju = {
-            'year': year, 'month': month, 'weak': weak, 'strong': strong,
+            'year': year, 'month': month, 'strong': strong,
+            'support_type': support_type,
             'siju': siju, 'siju_type': siju_type,
             'iljin': iljin, 'iljin_type': iljin_type,
             'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
@@ -323,14 +478,20 @@ def get_saju(conn, birth):
 
 def check_total_stroke(conn, last_name, m1, m2):
     t1 = get_total_strokes(last_name, m2, None)
-    if check_81_suri(conn, t1) is False:  # (홍+길) 동
+    if t1 == 0:
+        return False
+    if check_81_suri(conn, t1) is False:  # (홍) 길 (동)
         return False
 
     t2 = get_total_strokes(m1, m2, None)
+    if t2 == 0:
+        return False
     if check_81_suri(conn, t2) is False:  # 홍 (길+동)
         return False
 
     t3 = get_total_strokes(last_name, m1, m2)
+    if t3 == 0:
+        return False
     if check_81_suri(conn, t3) is False:  # (홍+길+동)
         return False
 
@@ -357,30 +518,7 @@ def check_plus_minus_hangul(conn, last_name, m1, m2):
     return True
 
 
-def check_plus_minus_hanja(conn, n1, n2, n3):
-    if n1[3] is None:
-        n1_strk = int(n1[2])
-    else:
-        n1_strk = int(n1[2]) + int(n1[3])
-
-    if n2[3] is None:
-        n2_strk = int(n2[2])
-    else:
-        n2_strk = int(n2[2]) + int(n2[3])
-
-    if n3[3] is None:
-        n3_strk = int(n3[2])
-    else:
-        n3_strk = int(n3[2]) + int(n3[3])
-
-    if n1_strk % 2 == 0 and n2_strk % 2 == 0 and n3_strk % 2 == 0:
-        return False
-    if n1_strk % 2 == 1 and n2_strk % 2 == 1 and n3_strk % 2 == 1:
-        return False
-    return True
-
-
-def check_hangul_hard_pronounce(last_name, m1, m2):
+def check_all_name_hard_pronounce(last_name, m1, m2):
     s1 = split_syllable_char(last_name[1])
     s2 = split_syllable_char(m1[1])
     s3 = split_syllable_char(m2[1])
@@ -390,9 +528,9 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
     elif s2[0] == s3[0]:  # 신류려
             return False
 
-    if (s2[1] == 'ㅐ'):  # 김해선 -> 김혜선
-        return False
-    elif (s3[1] == 'ㅔ'):  # 김지에 -> 김지애
+    # if (s2[1] == 'ㅐ'):  # 김해선 -> 김혜선  신애라
+    #    return False
+    if (s3[1] == 'ㅔ'):  # 김지에 -> 김지애
         return False
 
     if (s2[0] == s3[0]):  # 이름의 자음이 같은 경우에 모음 확인
@@ -433,7 +571,18 @@ def check_hangul_hard_pronounce(last_name, m1, m2):
     return True
 
 
-def get_name_list(conn, last_name, m1):
+def support_weak_energy(middle_type, saju):
+    if saju['weak1'] == middle_type:
+        # print('[1] ', saju['weak1'], middle_type)
+        return True
+    elif saju['weak2'] == middle_type:
+        # print('[2] ', saju['weak2'], middle_type)
+        return True
+    else:
+        return False
+
+
+def get_name_list(conn, last_name, m1, saju):
     name_list = []
     s = conn.cursor()
     query = """
@@ -447,19 +596,19 @@ def get_name_list(conn, last_name, m1):
             continue
 
         name2 = '%s%s' % (m1[1], m2[1])
-        try:
-            if BLOCK_LIST[name2] == 1:
-                continue
-        except:
-            pass
-
-        name_type = '%s%s%s' % (last_name[4], m1[4], m2[4])
-        # STEP 4: 오행의 배치 관계
-        if check_five_type(name_type) is False:
+        if check_name(name2) is False:
             continue
 
+        # name_type = '%s%s%s' % (last_name[4], m1[4], m2[4])
+        # print(name2, name_type)
+        # if support_weak_energy(m1[4], saju) is False:
+        #    continue
+        # STEP 4: 오행의 배치 관계, 발음오행 (상생) 운혜본 채택 말이 안됨.
+        # if check_five_type(name_type) is False:
+        #    continue
+
         # STEP 2: 수리영동 조직관계
-        # STEP 7: 수리 역상의 관계
+        # STEP 7: 수리 역상의 관계, 한자획수, 원형이정
         if check_total_stroke(conn, last_name, m1, m2) is False:
             continue
 
@@ -467,11 +616,12 @@ def get_name_list(conn, last_name, m1):
         if check_plus_minus_hangul(conn, last_name, m1, m2) is False:
             continue
 
-        if check_plus_minus_hanja(conn, last_name, m1, m2) is False:
-            continue
+        #   # total stroke 확인하는 로직과 중복되어 삭제
+        # if check_plus_minus_hanja(conn, last_name, m1, m2) is False:
+        #    continue
 
         # STEP 6: 음령 오행의 역상 관계
-        if check_hangul_hard_pronounce(last_name, m1, m2) is False:
+        if check_all_name_hard_pronounce(last_name, m1, m2) is False:
             continue
 
         temp_name = '%s%s%s' % (last_name[1], m1[1], m2[1])
@@ -502,40 +652,43 @@ def get_total_strokes(n1, n2, n3=None):
             n3_strk = int(n3[2])
         else:
             n3_strk = int(n3[2]) + int(n3[3])
+        # 획수음양
+        if n1_strk % 2 == 0 and n2_strk % 2 == 0 and n3_strk % 2 == 0:
+            return 0  # 획수가 모두 짝수는 불가
+        elif n1_strk % 2 == 1 and n2_strk % 2 == 1 and n3_strk % 2 == 1:
+            return 0  # 획수가 모두 홀수는 불가
+
         total_strokes = n1_strk + n2_strk + n3_strk
         # print(n1[2], n1[3], n2[2], n2[3], n3[2], n3[3], '-> ', total_strokes)
     return total_strokes
 
 
 """
-▣ 사주에 ‘木’이 3개이상 있을때는 ‘火’ 또는 ‘金’에 해당하는 글자로 작명합니다.
-▣ 사주에 ‘土’가 3개이상 있을때는 ‘金’ 또는 ‘木’에 해당하는 글자로 작명합니다.
-▣ 사주에 ‘火’가 3개이상 있을때는 ‘土’ 또는 ‘水’에 해당하는 글자로 작명합니다.
-▣ 사주에 ‘金’이 3개이상 있을때는 ‘水’ 또는 ‘火’에 해당하는 글자로 작명합니다.
-▣ 사주에 ‘水’가 3개이상 있을때는 ‘木’ 또는 ‘土’에 해당하는 글자로 작명합니다.
-   if strong == '木' and row[4] == '火':
-       return True
-   elif strong == '木' and row[4] == '金':
-       return True
-   elif strong == '土' and row[4] == '金':
-       return True
-   elif strong == '土' and row[4] == '木':
-       return True
-   elif strong == '火' and row[4] == '土':
-       return True
-   elif strong == '火' and row[4] == '水':
-       return True
-   elif strong == '金' and row[4] == '水':
-       return True
-   elif strong == '金' and row[4] == '火':
-       return True
-   elif strong == '水' and row[4] == '木':
-       return True
-   elif strong == '水' and row[4] == '土':
-       return True
-   else:
-       return False
+ 사주에 ‘木’이 3개이상 있을때는 ‘火’ 또는 ‘金’에 해당하는 글자로 작명합니다.
+ 사주에 ‘土’가 3개이상 있을때는 ‘金’ 또는 ‘木’에 해당하는 글자로 작명합니다.
+ 사주에 ‘火’가 3개이상 있을때는 ‘土’ 또는 ‘水’에 해당하는 글자로 작명합니다.
+ 사주에 ‘金’이 3개이상 있을때는 ‘水’ 또는 ‘火’에 해당하는 글자로 작명합니다.
+ 사주에 ‘水’가 3개이상 있을때는 ‘木’ 또는 ‘土’에 해당하는 글자로 작명합니다.
 """
+
+
+def type_check_with_strong_energy(strong, row):
+    if strong == '木':
+        if row[4] == '火' or row[4] == '金':
+            return True
+    elif strong == '土':
+        if row[4] == '金' or row[4] == '木':
+            return True
+    elif strong == '火':
+        if row[4] == '土' or row[4] == '水':
+            return True
+    elif strong == '金':
+        if row[4] == '水' or row[4] == '火':
+            return True
+    elif strong == '水':
+        if row[4] == '木' or row[4] == '土':
+            return True
+    return False
 
 
 def type_check_with_month(saju, row):
@@ -630,74 +783,89 @@ def type_check_with_month(saju, row):
     return True
 
 
+def check_support_type(support_type, middle_type):
+    for i in range(len(support_type)):
+        if middle_type == support_type[i]:
+            return True
+    return False
+
+
+def check_name(name1):
+    try:
+        if BLOCK_LIST[name1] == 1:
+            return False
+    except:
+        try:
+            if WORDS_LIST[name1] == 1:
+                return False
+        except:
+            return True
+    return True
+
+
+# http://www.ksname.co.kr/bbs/board.php?bo_table=m51&wr_id=25
+# 한자음훈, 한자획수,획수음양, 획수오행(무시), 발음오행(맹점이 있음), 자원오행(보완), 원형이정
 def main():
     start_time = time.time()  # START
     conn = sqlite3.connect('naming_korean.db')
 
     # TEST data
-    birth = '200203010501'  # '200203011201'
+    birth = '200103010310'  # '200203011201'
     hanja = "金"  # 菊 李
-
     # 성씨 정보
     last_name = get_last_name_info(conn, hanja)
-    if last_name[1] == '리':
-        last_name[1] = '이'
-    elif last_name[1] == '로':
-        last_name[1] = '노'
-    elif last_name[1] == '금':
-        last_name[1] = '김'
-    elif last_name[1] == '림':
-        last_name[1] = '임'
 
     # STEP 1: 선천명과의 합국 조화 관계
     saju = get_saju(conn, birth)
     if saju is None:
-        print('get saju failed')
+        print('[ERR] get saju failed')
         return
+    print(saju['support_type'])
 
     s = conn.cursor()
-    # query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja;'
-    # STEP 8: 어휘 어감의 조정 관계
     query = """
     SELECT hanja,reading,strokes,add_strokes,five_type
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
     NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락',
-    '량', '련', '목', '복', '애', '엄', '열', '오', '요', '왕', '욱', '읍',
-    '빈', '표', '필', '탁', '회', '후', '흠')
+    '량', '련', '목', '복', '해', '엄', '열', '오', '요', '왕', '욱', '읍',
+    '빈', '표', '필', '탁', '회', '후', '흠',
+    '균')
     """
-    total_list = 0
+    total_name_list = []
+    cnt = 0
     for row in s.execute(query):  # ('架', 9, None, '木')
         name1 = '%s%s' % (last_name[1], row[1])
-        try:
-            if BLOCK_LIST[name1] == 1:
-                continue
-        except:
-            pass
-        name_list = get_name_list(conn, last_name, row)
+        if check_name(name1) is False:
+            continue
+
+        # 자원오행 (보완)
+        if type_check_with_month(saju, row) is False:
+            continue
+        # if type_check_with_strong_energy(saju['strong'], row) is False:
+        #    continue
+        if check_support_type(saju['support_type'], row[4]) is False:
+            continue
+
+        ts = get_total_strokes(last_name, row, None)
+        if ts == 0 or check_81_suri(conn, ts) is False:  # (홍+길) 동
+            continue
+
+        cnt += 1
+        name_list = get_name_list(conn, last_name, row, saju)
         if name_list is None:
             continue
-        print(name_list)
-        total_list += len(name_list)
+        total_name_list.extend(name_list)
 
+    # print(total_name_list)
+    print('Total: ', len(total_name_list))
+    print(cnt)
     print("--- %s seconds ---" % (time.time() - start_time))  # END
-    print('Total: ', total_list)
+    temp = array_remove_duplicates(total_name_list)
+    print(temp, len(temp))
     conn.close()  # db close
     return
-
-
-"""
-[o] 1: 선천명과의 합국 조화 관계
-[o] 2: 수리영동 조직관계
-[o] 7: 수리 역상의 관계
-[o] 3: 음양 배열 관계
-[o] 4: 오행의 배치 관계
-[o] 8: 어휘 어감의 조정 관계
-[o] 6: 음령 오행의 역상 관계
-
-[o] 5: 자의 정신 관계
-"""
 
 
 if __name__ == '__main__':
