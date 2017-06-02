@@ -32,6 +32,7 @@ def sqlite3_init():
     "meaning" text NULL,
     "radical" char(1) NULL,
     "radical_info" varchar(128) NULL,
+    "rsc_type" char(1) NULL,
     UNIQUE(reading, hanja))''')
     conn.commit()
     return conn

@@ -33,7 +33,8 @@ def create_naming_hanja_table():
     "reading_strokes" integer NULL,
     "radical" char(1) NULL,
     "radical_info" varchar(128) NULL,
-    "five_type" char(1) NULL)''')
+    "five_type" char(1) NULL,
+    "rsc_type" char(1) NULL)''')
     conn.commit()
 
     return conn
