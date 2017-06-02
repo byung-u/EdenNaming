@@ -13,6 +13,12 @@ from words_list import WORDS_LIST
 SHINGANG = 1
 SHINYACK = 0
 
+HANJA = 0
+READING = 1
+STROKES = 2
+ADD_STROKES = 3
+FIVE_TYPE = 4
+
 # DBG
 LAST_NAME_LIST = ['丁', '丕', '丘', '主', '乃', '于', '京', '仇', '付', '任', '伊', '伍', '余', '侯', '倉', '候', '傅', '元', '全', '兪', '公', '具', '初', '判', '剛', '劉', '包', '化', '千', '卓', '南', '卜', '卞', '占', '印', '叢', '史', '吉', '后', '吳', '呂', '周', '咸', '唐', '喬', '單', '嚴', '國', '堅', '增', '墨', '夏', '多', '夜', '大', '天', '太', '夫', '奇', '奈', '奉', '姚', '姜', '孔', '孟', '孫', '安', '宋', '宗', '宣', '寶', '尙', '尹', '山', '崔', '左', '平', '康', '庾', '廉', '延', '弓', '张', '張', '强', '弼', '彈', '彬', '彭', '影', '徐', '愼', '慈', '慶', '成', '戰', '房', '扈', '承', '文', '斤', '方', '施', '昇', '昌', '明', '昔', '星', '晋', '景', '智', '曲', '曺', '曾', '朱', '朴', '杉', '李', '杜', '杨', '松', '林', '柳', '柴', '桂', '梁', '梅', '森', '楊', '楔', '楚', '榮', '樊', '橋', '權', '欒', '武', '段', '殷', '毛', '水', '氷', '江', '池', '沈', '沙', '河', '洙', '洪', '浪', '海', '淳', '湯', '溫', '滕', '漢', '潘', '燕', '片', '牟', '玄', '玉', '王', '班', '琴', '甄', '甘', '田', '申', '畢', '異', '白', '皮', '盧', '眞', '睦', '石', '禹', '秋', '秦', '程', '章', '箕', '管', '簡', '米', '罗', '羅', '耿', '胡', '臧', '舍', '舜', '艾', '芮', '芸', '苑', '苗', '范', '荀', '莊', '菊', '萬', '葉', '葉', '葛', '董', '蔡', '蔣', '薛', '蘇', '衛', '表', '袁', '裵', '解', '許', '諸', '謝', '譚', '谷', '賀', '賈', '賓', '趙', '路', '車', '辛', '連', '道', '邊', '邕', '邢', '邦', '邱', '邵', '郝', '郭', '都', '鄒', '鄧', '鄭', '采', '釋', '金', '錢', '鍾', '鎬', '閔', '閻', '關', '阮', '阿', '陈', '陰', '陳', '陶', '陸', '隋', '雍', '雲', '雷', '鞠', '韋', '韓', '順', '頓', '顧', '馬', '馮', '高', '魏', '魚', '魯', '鳳', '鴌', '麻', '黃', '黎', '齊', '龍', '龐', ]
 
@@ -284,40 +290,6 @@ def get_energy_saju(energy):
     # return last_two_weak, max(energy, key=energy.get)
 
 
-# ㅇ 木이 과다한데 火가 없으면 자원오행이 火인 글자를 선택하고, 火가 있으나 金이 없다면 金인 글자를 선택한다.
-# ㅇ 火가 과다한데 土가 없으면 土인 글자를 선택하고, 土가 있으나 水가 없다면 水인 글자를 선택한다.
-# ㅇ 土가 과다한데 金이 없으면 金인 글자를 선택하고, 金이 있으나 木이 없다면 木인 글자를 선택한다.
-# ㅇ 金이 과다한데 水가 없으면 水인 글자를 선택하고, 水가 있으나 火가 없다면 火인 글자를 선택한다.
-# ㅇ 水가 과다한데 木이 없으면 木인 글자를 선택하고, 木이 있으나 土가 없다면 土인 글자를 선택한다.
-def check_complementary_list(many_list, zero_list, exist_list):
-    complementary = []
-    for many in many_list:
-        for zero in zero_list:
-            if many == '木' and zero == '火':
-                complementary.append('火')
-            elif many == '火' and zero == '土':
-                complementary.append('土')
-            elif many == '土' and zero == '金':
-                complementary.append('金')
-            elif many == '金' and zero == '水':
-                complementary.append('水')
-            elif many == '水' and zero == '木':
-                complementary.append('木')
-
-            for exist in exist_list:
-                if exist == '火' and zero == '金':
-                    complementary.append('金')
-                elif exist == '土' and zero == '水':
-                    complementary.append('水')
-                elif exist == '金' and zero == '木':
-                    complementary.append('木')
-                elif exist == '水' and zero == '火':
-                    complementary.append('火')
-                elif exist == '木' and zero == '土':
-                    complementary.append('土')
-    return complementary
-
-
 # 사주에 ‘木’이 3개이상 있을때는 ‘火’ 또는 ‘金’에 해당하는 글자로 작명합니다.
 # 사주에 ‘土’가 3개이상 있을때는 ‘金’ 또는 ‘木’에 해당하는 글자로 작명합니다.
 # 사주에 ‘火’가 3개이상 있을때는 ‘土’ 또는 ‘水’에 해당하는 글자로 작명합니다.
@@ -524,7 +496,8 @@ def get_saju(conn, birth):
     saju = {
             # 'year': year, 'month': month, 'strong': strong,
             'year': year, 'month': month,
-            'support_type': support_type,
+            'c1':  complementary_type[0],
+            'c2':  complementary_type[1],
             'siju': siju, 'siju_type': siju_type,
             'iljin': iljin, 'iljin_type': iljin_type,
             'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
@@ -575,17 +548,9 @@ def check_positive_negative(conn, n1, n2, n3):
 
 
 def check_two_words_hard_pronounce(n1, n2):
-
     s1 = split_syllable_char(n1)
     s2 = split_syllable_char(n2)
 
-    if len(s1) == 3:
-        if s1[2] == 'ㄹ' and s2[0] == 'ㅇ':  # 갈이무
-            return False
-        elif s1[2] == 'ㅁ' and s2[0] == 'ㅇ':  # 남유현
-            return False
-        elif s1[2] == 'ㄹ' and s2[0] == 'ㄴ':  # 갈나성
-            return False
     if len(s1) == 3 and len(s2) == 3:
         if s1[1] == 'ㅕ' and s1[2] == 'ㅇ' and s2[1] == 'ㅡ' and s2[2] == 'ㅇ':  # 경흥원
             return False
@@ -596,18 +561,15 @@ def check_two_words_hard_pronounce(n1, n2):
     return True
 
 
-def check_all_name_hard_pronounce(n1, n2, n3):
-    s1 = split_syllable_char(n1[1])
-    s2 = split_syllable_char(n2[1])
-    s3 = split_syllable_char(n3[1])
+def check_all_name_hard_pronounce(s1, s2, s3):
 
     if (s1[0] == s2[0] == s3[0]):  # 김구관
         return False
-    elif s2[0] == s3[0]:  # 신류려
-            return False
+    # elif s2[0] == s3[0]:  # 신류려
+            # return False
 
     # if (s2[1] == 'ㅐ'):  # 김해선 -> 김혜선  신애라
-    #    return False
+        # return False
     if (s3[1] == 'ㅔ'):  # 김지에 -> 김지애
         return False
 
@@ -628,10 +590,9 @@ def check_all_name_hard_pronounce(n1, n2, n3):
     elif (s2[1] == 'ㅖ' and s3[1] == 'ㅔ'):  # 이혜에
             return False
 
-    if len(s2) == 3 and len(s3) > 1:
-        if s2[2] == s3[0]:  # 김열루
-            return False
-
+    # if len(s2) == 3 and len(s3) > 1:
+        # if s2[2] == s3[0]:  # 김열루
+            # return False
     if len(s2) == 3 and len(s3) == 3:
         if (s2[1] == 'ㅕ' and s2[2] == 'ㄴ' and s3[1] == 'ㅕ' and s3[2] == 'ㄴ'):  # 최현련
             return False
@@ -643,18 +604,17 @@ def check_all_name_hard_pronounce(n1, n2, n3):
             return False
         elif (s2[1] == 'ㅑ' and s2[2] == 'ㅇ' and s3[1] == 'ㅑ' and s3[2] == 'ㅇ'):  # 최양량
             return False
-        elif (s2[2] == 'ㄱ' and s3[2] == 'ㄱ'):  # 이혁탁
+        elif s2[1] == 'ㅜ' and s2[2] == 'ㅇ' and s3[1] == 'ㅡ' and s3[2] == 'ㅇ':  # 상중승
             return False
-        elif (s2[2] == 'ㄴ' and s3[2] == 'ㄴ'):  # 이완린
+        elif s2[1] == 'ㅡ' and s2[2] == 'ㅇ' and s3[1] == 'ㅜ' and s3[2] == 'ㅇ':  # 상승중
             return False
-        #elif s2[1] == 'ㅜ' and s2[2] == 'ㅇ' and s3[1] == 'ㅡ' and s3[2] == 'ㅇ':  # 상중승
-        #    return False
-        #elif s2[1] == 'ㅡ' and s2[2] == 'ㅇ' and s3[1] == 'ㅜ' and s3[2] == 'ㅇ':  # 상승중
-        #    return False
-    elif len(s2) == 3 and len(s3) == 2:
-        if (s2[2] == 'ㄹ' and s3[1] == 'ㅖ'):  # 김설혜
-            return False
-
+        # elif (s2[2] == 'ㄱ' and s3[2] == 'ㄱ'):  # 이혁탁
+            # return False
+        # elif (s2[2] == 'ㄴ' and s3[2] == 'ㄴ'):  # 이완린
+            # return False
+    # elif len(s2) == 3 and len(s3) == 2:
+        # if (s2[2] == 'ㄹ' and s3[1] == 'ㅖ'):  # 김설혜
+            # return False
     return True
 
 
@@ -669,6 +629,85 @@ def support_weak_energy(middle_type, saju):
         return False
 
 
+def is_good_pronounce(check_set, set_len):
+    if set_len == 5:
+        if check_set == 'ㄱㄴㅁㅅㅇ':
+            return True
+
+    if set_len == 4:
+        if check_set == 'ㄱㄴㅁㅇ':
+            return True
+        if check_set == 'ㄱㄴㅅㅇ':
+            return True
+        if check_set == 'ㄴㅁㅅㅇ':
+            return True
+        if check_set == 'ㄱㅁㅅㅇ':
+            return True
+        if check_set == 'ㄱㄴㅁㅅ':
+            return True
+    elif set_len == 3:
+        if check_set == 'ㄱㄴㅁ':
+            return True
+        if check_set == 'ㄱㄴㅇ':
+            return True
+        if check_set == 'ㄴㅅㅇ':
+            return True
+        if check_set == 'ㅁㅅㅇ':
+            return True
+        if check_set == 'ㄱㅁㅅ':
+            return True
+    elif set_len == 2:
+        if check_set == 'ㄱㄴ':
+            return True
+        if check_set == 'ㄴㅇ':
+            return True
+        if check_set == 'ㅅㅇ':
+            return True
+        if check_set == 'ㅁㅅ':
+            return True
+        if check_set == 'ㄱㅁ':
+            return True
+    elif set_len == 1:
+        if check_set == 'ㄱ':
+            return True
+        if check_set == 'ㄴ':
+            return True
+        if check_set == 'ㅁ':
+            return True
+        if check_set == 'ㅅ':
+            return True
+        if check_set == 'ㅇ':
+            return True
+
+    return False
+
+
+def balum_oheng(s1, s2, s3):
+    TYPE_DICT = {
+        'ㄱ': 'ㄱ', 'ㅋ': 'ㄱ',
+        'ㅁ': 'ㅁ', 'ㅂ': 'ㅁ', 'ㅍ': 'ㅁ',
+        'ㅅ': 'ㅅ', 'ㅈ': 'ㅅ', 'ㅊ': 'ㅅ',
+        'ㅇ': 'ㅇ', 'ㅎ': 'ㅇ',
+        'ㄴ': 'ㄴ', 'ㄷ': 'ㄴ', 'ㄹ': 'ㄴ', 'ㅌ': 'ㄴ',
+    }
+
+    check_pronounce = []
+    check_pronounce.append(TYPE_DICT[s1[0]])
+    check_pronounce.append(TYPE_DICT[s2[0]])
+    check_pronounce.append(TYPE_DICT[s3[0]])
+
+    if len(s1) == 3:
+        check_pronounce.append(TYPE_DICT[s1[2]])
+    if len(s2) == 3:
+        check_pronounce.append(TYPE_DICT[s2[2]])
+    if len(s3) == 3:
+        check_pronounce.append(TYPE_DICT[s3[2]])
+
+    temp = sorted(array_remove_duplicates(check_pronounce))
+    check_set = ''.join(temp)
+    return is_good_pronounce(check_set, len(check_set))
+
+
 def get_name_list(conn, n1, n2, saju):
     name_list = []
     s = conn.cursor()
@@ -678,41 +717,35 @@ def get_name_list(conn, n1, n2, saju):
     WHERE is_naming_hanja=1 AND reading
     NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천',
     '택', '탁', '태', '외', '사', '매', '읍', '소', '종', '순', '요', '자',
-    '경', '옥')
+    '경', '옥', '해')
     """
     for n3 in s.execute(query):
-        if n1[0] == n3[0] or n2[0] == n3[0]:  # 김주김, 김소소
+        if n1[HANJA] == n3[HANJA] or n2[HANJA] == n3[HANJA]:  # 김주김, 김소소
+            continue
+        elif n1[READING] == n3[READING] or n2[READING] == n3[READING]:  # 김주김, 김소소
             continue
 
         n2n3 = '%s%s' % (n2[1], n3[1])
         if check_name(n2n3) is False:
             continue
 
+        if saju['c1'] != n2[FIVE_TYPE] and saju['c2'] != n3[FIVE_TYPE]:
+            continue
+
         if check_positive_negative(conn, n1, n2, n3) is False:
             continue
+
         # check positive negative hanja strokes as well
         if check_total_stroke(conn, n1, n2, n3) is False:
             continue
 
-        # name_type = '%s%s%s' % (n1[4], n2[4], n3[4])
-        # print(name2, name_type)
-        # if support_weak_energy(n2[4], saju) is False:
-        #    continue
-        # STEP 4: 오행의 배치 관계, 발음오행 (상생) 운혜본 채택 말이 안됨.
-        # if check_five_type(name_type) is False:
-        #    continue
+        s1 = split_syllable_char(n1[READING])
+        s2 = split_syllable_char(n2[READING])
+        s3 = split_syllable_char(n3[READING])
+        if balum_oheng(s1, s2, s3) is False:
+            continue
 
-        # STEP 2: 수리영동 조직관계
-        # STEP 7: 수리 역상의 관계, 한자획수, 원형이정
-
-        # STEP 3: 음양 배열 관계
-
-        #   # total stroke 확인하는 로직과 중복되어 삭제
-        # if check_plus_minus_hanja(conn, n1, n2, n3) is False:
-        #    continue
-
-        # STEP 6: 음령 오행의 역상 관계
-        if check_all_name_hard_pronounce(n1, n2, n3) is False:
+        if check_all_name_hard_pronounce(s1, s2, s3) is False:
             continue
 
         temp_name = '%s%s%s' % (n1[1], n2[1], n3[1])
@@ -951,8 +984,8 @@ def main():
     # DBG TEST data
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
-    birth = '199611160347'
-    ln = '尙'
+    birth = '200611022321'  # '199611160347'
+    ln = '淳'  #'尙'
 
     # LAST NAME
     n1 = get_last_name_info(conn, ln)
@@ -962,9 +995,6 @@ def main():
     if saju is None:
         print('[ERR] get saju failed')
         return
-    print('추가해야할 행: ', saju['support_type'])
-# DBG
-    return
 
     name_list = []
     cnt = 0
@@ -977,21 +1007,25 @@ def main():
     NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락',
     '량', '련', '목', '복', '해', '엄', '열', '오', '요', '왕', '욱', '읍',
     '빈', '표', '필', '탁', '회', '후', '흠',
-    '균', '옥', '류', '료', '안')
+    '균', '옥', '류', '료', '안', '집')
     """
     for n2 in s.execute(query):
-        if n1[1] == n2[1]:  # 장장호
+        if n1[READING] == n2[READING]:  # 장장호
             continue
 
-        n1n2 = '%s%s' % (n1[1], n2[1])
+        n1n2 = '%s%s' % (n1[READING], n2[READING])
         if check_name(n1n2) is False:
+            continue
+
+        if saju['c1'] != n2[FIVE_TYPE] and saju['c2'] != n2[FIVE_TYPE]:
             continue
 
         ts = get_total_strokes(n1, n2, None)
         if ts == 0 or check_81_suri(conn, ts) is False:  # (홍+길) 동
             continue
 
-        # TODO: check with SAJU
+        if check_two_words_hard_pronounce(n1[READING], n2[READING]) is False:
+            continue
 
         names = get_name_list(conn, n1, n2, saju)
         if names is None:
@@ -1005,11 +1039,10 @@ def main():
 #        #    continue
 #        if check_support_type(saju['support_type'], row[4]) is False:
 #            continue
-#        if check_two_words_hard_pronounce(last_name[1], row[1]) is False:
-#            continue
     # DBG
     temp = array_remove_duplicates(name_list)
     # print_men_women(temp)
+    print(temp)
     print(ln, birth)
     print("%.3f sec, Total: %d(%d) -> %d" % ((time() - start_time), len(name_list), cnt, len(temp)))
 
