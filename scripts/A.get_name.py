@@ -25,7 +25,7 @@ LAST_NAME_LIST = ['丁', '丕', '丘', '主', '乃', '于', '京', '仇', '付',
 
 def get_last_name_info(conn, hanja):
     s = conn.cursor()
-    query = 'SELECT hanja,reading,strokes,add_strokes,rsc_type FROM naming_hanja where hanja="%s"' % hanja
+    query = 'SELECT hanja,reading,strokes,add_strokes,rsc_type FROM last_name where hanja="%s"' % hanja
     s.execute(query)
     row = s.fetchone()
     if row is None:
@@ -533,7 +533,7 @@ def get_name_list(conn, n1, n2, saju):
     WHERE is_naming_hanja=1 AND reading
     NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천',
     '택', '탁', '태', '외', '사', '매', '읍', '소', '종', '순', '요', '자',
-    '경', '옥', '해')
+    '경', '옥', '해', '부', '효')
     """
     for n3 in s.execute(query):
         if n1[HANJA] == n3[HANJA] or n2[HANJA] == n3[HANJA]:  # 김주김, 김소소
@@ -678,8 +678,8 @@ def main():
     # DBG TEST data
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
-    birth = '199807210319'  # '200611022321'  # '199611160347'
-    # ln = '淳'  # '尙'
+    birth = '199802131217'
+    ln = '卓'
 
     # LAST NAME
     n1 = get_last_name_info(conn, ln)
@@ -703,7 +703,7 @@ def main():
     NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락',
     '량', '련', '목', '복', '해', '엄', '열', '오', '요', '왕', '욱', '읍',
     '빈', '표', '필', '탁', '회', '후', '흠',
-    '균', '옥', '류', '료', '안', '집')
+    '균', '옥', '류', '료', '안', '집', '부', '면')
     """
     for n2 in s.execute(query):
         if n1[READING] == n2[READING]:  # 장장호
