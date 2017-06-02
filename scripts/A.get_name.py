@@ -533,7 +533,7 @@ def get_name_list(conn, n1, n2, saju):
     WHERE is_naming_hanja=1 AND reading
     NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천',
     '택', '탁', '태', '외', '사', '매', '읍', '소', '종', '순', '요', '자',
-    '경', '옥', '해', '부', '효')
+    '경', '옥', '해', '부', '효', '존')
     """
     for n3 in s.execute(query):
         if n1[HANJA] == n3[HANJA] or n2[HANJA] == n3[HANJA]:  # 김주김, 김소소
@@ -678,9 +678,8 @@ def main():
     # DBG TEST data
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
-    birth = '199802131217'
-    ln = '卓'
-
+    birth = '199410172113'
+    ln = '夜'
     # LAST NAME
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
@@ -700,10 +699,10 @@ def main():
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
-    NOT IN ('각', '과', '국', '니', '렴', '렬', '린', '랑', '려', '령', '락',
-    '량', '련', '목', '복', '해', '엄', '열', '오', '요', '왕', '욱', '읍',
-    '빈', '표', '필', '탁', '회', '후', '흠',
-    '균', '옥', '류', '료', '안', '집', '부', '면')
+    NOT IN ('각', '과', '국', '균', '니', '락', '랑', '량', '려', '련', '렬',
+    '렴', '령', '료', '류', '률', '린', '면', '목', '복', '부', '빈', '안',
+    '엄', '열', '오', '옥', '왕', '요', '욱', '읍', '집', '탁', '표', '필',
+    '해', '회', '후', '흠')
     """
     for n2 in s.execute(query):
         if n1[READING] == n2[READING]:  # 장장호
