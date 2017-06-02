@@ -17,7 +17,7 @@ HANJA = 0
 READING = 1
 STROKES = 2
 ADD_STROKES = 3
-FIVE_TYPE = 4
+RSC_TYPE = 4
 
 # DBG
 LAST_NAME_LIST = ['丁', '丕', '丘', '主', '乃', '于', '京', '仇', '付', '任', '伊', '伍', '余', '侯', '倉', '候', '傅', '元', '全', '兪', '公', '具', '初', '判', '剛', '劉', '包', '化', '千', '卓', '南', '卜', '卞', '占', '印', '叢', '史', '吉', '后', '吳', '呂', '周', '咸', '唐', '喬', '單', '嚴', '國', '堅', '增', '墨', '夏', '多', '夜', '大', '天', '太', '夫', '奇', '奈', '奉', '姚', '姜', '孔', '孟', '孫', '安', '宋', '宗', '宣', '寶', '尙', '尹', '山', '崔', '左', '平', '康', '庾', '廉', '延', '弓', '张', '張', '强', '弼', '彈', '彬', '彭', '影', '徐', '愼', '慈', '慶', '成', '戰', '房', '扈', '承', '文', '斤', '方', '施', '昇', '昌', '明', '昔', '星', '晋', '景', '智', '曲', '曺', '曾', '朱', '朴', '杉', '李', '杜', '杨', '松', '林', '柳', '柴', '桂', '梁', '梅', '森', '楊', '楔', '楚', '榮', '樊', '橋', '權', '欒', '武', '段', '殷', '毛', '水', '氷', '江', '池', '沈', '沙', '河', '洙', '洪', '浪', '海', '淳', '湯', '溫', '滕', '漢', '潘', '燕', '片', '牟', '玄', '玉', '王', '班', '琴', '甄', '甘', '田', '申', '畢', '異', '白', '皮', '盧', '眞', '睦', '石', '禹', '秋', '秦', '程', '章', '箕', '管', '簡', '米', '罗', '羅', '耿', '胡', '臧', '舍', '舜', '艾', '芮', '芸', '苑', '苗', '范', '荀', '莊', '菊', '萬', '葉', '葉', '葛', '董', '蔡', '蔣', '薛', '蘇', '衛', '表', '袁', '裵', '解', '許', '諸', '謝', '譚', '谷', '賀', '賈', '賓', '趙', '路', '車', '辛', '連', '道', '邊', '邕', '邢', '邦', '邱', '邵', '郝', '郭', '都', '鄒', '鄧', '鄭', '采', '釋', '金', '錢', '鍾', '鎬', '閔', '閻', '關', '阮', '阿', '陈', '陰', '陳', '陶', '陸', '隋', '雍', '雲', '雷', '鞠', '韋', '韓', '順', '頓', '顧', '馬', '馮', '高', '魏', '魚', '魯', '鳳', '鴌', '麻', '黃', '黎', '齊', '龍', '龐', ]
@@ -25,9 +25,12 @@ LAST_NAME_LIST = ['丁', '丕', '丘', '主', '乃', '于', '京', '仇', '付',
 
 def get_last_name_info(conn, hanja):
     s = conn.cursor()
-    query = 'SELECT hanja,reading,strokes,add_strokes,five_type FROM naming_hanja where hanja="%s"' % hanja
+    query = 'SELECT hanja,reading,strokes,add_strokes,rsc_type FROM naming_hanja where hanja="%s"' % hanja
     s.execute(query)
     row = s.fetchone()
+    if row is None:
+        print('SELECT failed, hanja=', hanja)
+        return None
     last_name = list(row)
     if last_name[1] == '리':
         last_name[1] = '이'
@@ -103,6 +106,73 @@ def get_siju(iljin, hour):
     return (siju[x][y])
 
 
+def yundal_to_pyoungdal(conn, year, month, day):
+    YUNDAL_DICT = {
+        '190008': '乙酉',
+        '190305': '戊午',
+        '190604': '癸巳',
+        '190902': '丁卯',
+        '191106': '乙未',
+        '191405': '庚午',
+        '191702': '癸卯',
+        '191907': '壬申',
+        '192205': '丙午',
+        '192504': '辛巳',
+        '192802': '乙卯',
+        '193006': '癸未',
+        '193305': '戊午',
+        '193603': '壬辰',
+        '193807': '庚申',
+        '194106': '乙未',
+        '194404': '己巳',
+        '194702': '癸卯',
+        '194907': '壬申',
+        '195205': '丙午',
+        '195503': '庚辰',
+        '195708': '己酉',
+        '196006': '癸未',
+        '196304': '丁巳',
+        '196603': '壬辰',
+        '196807': '庚申',
+        '197105': '甲午',
+        '197404': '己巳',
+        '197608': '丁酉',
+        '197906': '辛未',
+        '198204': '乙巳',
+        '198410': '乙亥',
+        '198706': '丁未',
+        '199005': '壬午',
+        '199303': '丙辰',
+        '199508': '乙酉',
+        '199805': '戊午',
+        '200104': '癸巳',
+        '200402': '丁卯',
+        '200607': '丙申',
+        '200905': '庚午',
+        '201203': '甲辰',
+        '201409': '甲戌',
+        '201705': '丙午',
+        '202004': '辛巳',
+        '202302': '乙卯',
+        '202506': '癸未',
+        '202805': '戊午',
+        '203103': '壬辰',
+        '203311': '癸丑',
+        '203606': '乙未',
+        '203905': '乙未',
+    }
+    s = conn.cursor()
+    query = '''
+    SELECT lun_year, lun_month, lun_day
+    FROM gregorian_calendar
+    WHERE sol_year=%s and sol_month=%s and sol_day=%s
+    ''' % (year, month, day)
+    s.execute(query)
+    row = s.fetchone()
+    yun_month = '%d%02d' % (row[0], row[1])
+    return YUNDAL_DICT[yun_month]
+
+
 def get_secha_wolgeon_iljin(conn, year, month, day):
     s = conn.cursor()
     query = '''
@@ -112,7 +182,11 @@ def get_secha_wolgeon_iljin(conn, year, month, day):
     ''' % (year, month, day)
     s.execute(query)
     row = s.fetchone()
-    return row[0], row[1], row[2]
+    if row[1] == '-':
+        pyoungdal = yundal_to_pyoungdal(conn, year, month, day)
+        return row[0], pyoungdal, row[2]
+    else:
+        return row[0], row[1], row[2]
 
 
 def get_h10gan_5types(h10gan):
@@ -454,7 +528,7 @@ def get_name_list(conn, n1, n2, saju):
     name_list = []
     s = conn.cursor()
     query = """
-    SELECT hanja,reading,strokes,add_strokes,five_type
+    SELECT hanja,reading,strokes,add_strokes,rsc_type
     FROM naming_hanja
     WHERE is_naming_hanja=1 AND reading
     NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천',
@@ -471,7 +545,7 @@ def get_name_list(conn, n1, n2, saju):
         if check_name(n2n3) is False:
             continue
 
-        if saju['c1'] != n2[FIVE_TYPE] and saju['c2'] != n3[FIVE_TYPE]:
+        if saju['c1'] != n2[RSC_TYPE] and saju['c2'] != n3[RSC_TYPE]:
             continue
 
         if check_positive_negative(conn, n1, n2, n3) is False:
@@ -604,11 +678,13 @@ def main():
     # DBG TEST data
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
-    birth = '200611022321'  # '199611160347'
-    ln = '淳'  # '尙'
+    birth = '199807210319'  # '200611022321'  # '199611160347'
+    # ln = '淳'  # '尙'
 
     # LAST NAME
     n1 = get_last_name_info(conn, ln)
+    if n1 is None:
+        return
 
     # SAJU
     saju = get_saju(conn, birth)
@@ -620,7 +696,7 @@ def main():
     cnt = 0
     s = conn.cursor()
     query = """
-    SELECT hanja,reading,strokes,add_strokes,five_type
+    SELECT hanja,reading,strokes,add_strokes,rsc_type
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
@@ -637,7 +713,7 @@ def main():
         if check_name(n1n2) is False:
             continue
 
-        if saju['c1'] != n2[FIVE_TYPE] and saju['c2'] != n2[FIVE_TYPE]:
+        if saju['c1'] != n2[RSC_TYPE] and saju['c2'] != n2[RSC_TYPE]:
             continue
 
         ts = get_total_strokes(n1, n2, None)
