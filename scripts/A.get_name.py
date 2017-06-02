@@ -41,134 +41,6 @@ def get_last_name_info(conn, hanja):
     return last_name
 
 
-# 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
-# 토 -> 목 -> 금 -> 화 -> 수 -> 토 (흉)
-def check_five_type(name_type):
-    # http://sajuplus.tistory.com/235
-    if name_type == '木木水':  # 木
-        return True
-    elif name_type == '木木火':
-        return True
-    elif name_type == '木水木':
-        return True
-    elif name_type == '木水水':
-        return True
-    elif name_type == '木火木':
-        return True
-    elif name_type == '木火火':
-        return True
-    elif name_type == '木火土':
-        return True
-    elif name_type == '木水金':
-        return True
-    elif name_type == '木土火':
-        return True
-    elif name_type == '木火水':
-        return True
-    elif name_type == '木水火':
-        return True
-    elif name_type == '火木木':  # 火
-        return True
-    elif name_type == '火木水':
-        return True
-    elif name_type == '火木火':
-        return True
-    elif name_type == '火火木':
-        return True
-    elif name_type == '火火土':
-        return True
-    elif name_type == '火土金':
-        return True
-    elif name_type == '火土火':
-        return True
-    elif name_type == '火土土':
-        return True
-    elif name_type == '火金土':
-        return True
-    elif name_type == '火水木':
-        return True
-    elif name_type == '火木土':
-        return True
-    elif name_type == '土金金':  # 土
-        return True
-    elif name_type == '土金土':
-        return True
-    elif name_type == '土金水':
-        return True
-    elif name_type == '土火木':
-        return True
-    elif name_type == '土火火':
-        return True
-    elif name_type == '土火土':
-        return True
-    elif name_type == '土土金':
-        return True
-    elif name_type == '土土火':
-        return True
-    elif name_type == '土水金':
-        return True
-    elif name_type == '土金火':
-        return True
-    elif name_type == '土木火':
-        return True
-    elif name_type == '土火金':
-        return True
-    elif name_type == '土土土':
-        return True
-    elif name_type == '金金水':  # 金
-        return True
-    elif name_type == '金金土':
-        return True
-    elif name_type == '金水金':
-        return True
-    elif name_type == '金水木':
-        return True
-    elif name_type == '金水水':
-        return True
-    elif name_type == '金土金':
-        return True
-    elif name_type == '金土火':
-        return True
-    elif name_type == '金土土':
-        return True
-    elif name_type == '金木水':
-        return True
-    elif name_type == '金水土':
-        return True
-    elif name_type == '金火土':
-        return True
-    elif name_type == '金土水':
-        return True
-    elif name_type == '水金金':  # 水
-        return True
-    elif name_type == '水金水':
-        return True
-    elif name_type == '水金土':
-        return True
-    elif name_type == '水木木':
-        return True
-    elif name_type == '水木水':
-        return True
-    elif name_type == '水木火':
-        return True
-    elif name_type == '水水金':
-        return True
-    elif name_type == '水水木':
-        return True
-    elif name_type == '水火木':
-        return True
-    elif name_type == '水木金':
-        return True
-    elif name_type == '水土金':
-        return True
-    elif name_type == '水金木':
-        return True
-    elif name_type == '水水水':
-        return True
-    else:  # not in  水火土金木 rule
-        return False
-
-
 def check_81_suri(conn, total_strokes):
     s = conn.cursor()
     query = 'SELECT luck_type FROM naming_81 WHERE strokes=%s' % total_strokes
@@ -284,12 +156,6 @@ def get_5types(h10gan, h12ji):
     return '%s%s' % (res_h10gan, res_h12ji)
 
 
-def get_energy_saju(energy):
-    return max(energy, key=energy.get)
-    # last_two_weak = (sorted(energy.items(), key=lambda x: x[1])[:2])
-    # return last_two_weak, max(energy, key=energy.get)
-
-
 # 사주에 ‘木’이 3개이상 있을때는 ‘火’ 또는 ‘金’에 해당하는 글자로 작명합니다.
 # 사주에 ‘土’가 3개이상 있을때는 ‘金’ 또는 ‘木’에 해당하는 글자로 작명합니다.
 # 사주에 ‘火’가 3개이상 있을때는 ‘土’ 또는 ‘水’에 해당하는 글자로 작명합니다.
@@ -317,7 +183,7 @@ def check_complementary(many):
         return None
 
     return complementary
- 
+
 
 def get_complementary(energy):
     max_val = energy[max(energy, key=energy.get)]
@@ -332,6 +198,7 @@ def get_complementary(energy):
 
 
 def count_5heng(siju_type, iljin_type, wolgeon_type, secha_type):
+    # 木火土金水
     energy = {
             '木': 0,
             '火': 0,
@@ -350,115 +217,11 @@ def count_5heng(siju_type, iljin_type, wolgeon_type, secha_type):
     return energy
 
 
-# 木火土金水
-def strong_ilgan(ilgan_type):
-    if ilgan_type == "木":
-        return "火"
-    elif ilgan_type == "火":
-        return "土"
-    elif ilgan_type == "土":
-        return "金"
-    elif ilgan_type == "金":
-        return "水"
-    elif ilgan_type == "水":
-        return "木"
-    else:
-        return False
-
-
-def weak_ilgan(ilgan_type):
-    if ilgan_type == "土":
-        return "木"
-    elif ilgan_type == "木":
-        return "金"
-    elif ilgan_type == "金":
-        return "火"
-    elif ilgan_type == "火":
-        return "水"
-    elif ilgan_type == "水":
-        return "土"
-    else:
-        return False
-
-
-def check_ilgi_ilgan(ilgi_type, ilgan_type):
-    # 일지가 일간을 지탱해줘야하기 때문에 일지가 일간을 강하게 해주는지 확인
-    if ilgan_type == "木" and ilgi_type == "火":
-        return True
-    elif ilgan_type == "火" and ilgi_type == "土":
-        return True
-    elif ilgan_type == "土" and ilgi_type == "金":
-        return True
-    elif ilgan_type == "金" and ilgi_type == "水":
-        return True
-    elif ilgan_type == "水" and ilgi_type == "木":
-        return True
-    else:
-        return False
-
-
-def check_shin(iljin, iljin_type, energy):
-    # 날씨가 추움, 더움, 건조, 습함에 대한 정확한 날짜 기준이 없으므로 미사용
-    # 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
-    # 토 -> 목 -> 금 -> 화 -> 수 -> 토 (흉)
-    ilgan_type = iljin_type[0]
-
-    # 일간을 강하게하거나 약하게 하는 오행을 확인해서 처리
-    s = strong_ilgan(ilgan_type)
-    w = weak_ilgan(ilgan_type)
-    if energy[s] > 3:
-        return SHINGANG  # 1
-    elif energy[s] > energy[w]:
-        return SHINGANG  # 1
-    elif energy[s] < energy[w]:
-        return SHINYACK  # 0
-
-    # 일지를 강하게하거나 약하게 하는 오행을 확인해서 처리
-    ilgi_type = iljin_type[1]
-    s = strong_ilgan(ilgi_type)
-    w = weak_ilgan(ilgi_type)
-    if energy[s] > energy[w]:
-        return SHINGANG  # 1
-    elif energy[s] < energy[w]:
-        return SHINYACK  # 0
-
-    # 일지가 일간을 강하게 하는 오행인가?
-    if check_ilgi_ilgan(ilgi_type, ilgan_type) is True:
-        return SHINGANG  # 1
-    else:
-        return SHINYACK  # 0
-
-
-def get_strong_ilgan_type(ilgan_type):
-    return strong_ilgan(ilgan_type)
-
-
-def get_weak_ilgan_type(ilgan_type):
-    return weak_ilgan(ilgan_type)
-
-
-def support_health(weak):
-    if weak == "木":
-        return "水"
-    elif weak == "火":
-        return "木"
-    elif weak == "土":
-        return "火"
-    elif weak == "金":
-        return "土"
-    elif weak == "水":
-        return "金"
-    else:
-        return None, None
-
-
 def array_remove_duplicates(l):
     return list(set(l))
 
 
 def get_saju(conn, birth):
-    support_type = []
-
     year = birth[0:4]
     month = birth[4:6]
     day = birth[6:8]
@@ -491,17 +254,14 @@ def get_saju(conn, birth):
     energy = count_5heng(siju_type, iljin_type, wolgeon_type, secha_type)
     complementary_type = get_complementary(energy)
 
-
-    # print(weaks[0][0], weaks[1][0], strong)
     saju = {
-            # 'year': year, 'month': month, 'strong': strong,
-            'year': year, 'month': month,
-            'c1':  complementary_type[0],
-            'c2':  complementary_type[1],
-            'siju': siju, 'siju_type': siju_type,
-            'iljin': iljin, 'iljin_type': iljin_type,
-            'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
-            'secha': secha, 'secha_type': secha_type,
+        'year': year, 'month': month,
+        'c1':  complementary_type[0],
+        'c2':  complementary_type[1],
+        'siju': siju, 'siju_type': siju_type,
+        'iljin': iljin, 'iljin_type': iljin_type,
+        'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
+        'secha': secha, 'secha_type': secha_type,
     }
     return saju
 
@@ -526,13 +286,6 @@ def check_total_stroke(conn, n1, n2, n3):
         return False
 
     return True
-
-
-def get_hangul_len(s):
-    hlen = 0
-    for i in range(len(s)):
-        hlen += hangul_len(s[i])
-    return hlen
 
 
 def check_positive_negative(conn, n1, n2, n3):
@@ -566,10 +319,8 @@ def check_all_name_hard_pronounce(s1, s2, s3):
     if (s1[0] == s2[0] == s3[0]):  # 김구관
         return False
     # elif s2[0] == s3[0]:  # 신류려
-            # return False
 
     # if (s2[1] == 'ㅐ'):  # 김해선 -> 김혜선  신애라
-        # return False
     if (s3[1] == 'ㅔ'):  # 김지에 -> 김지애
         return False
 
@@ -616,17 +367,6 @@ def check_all_name_hard_pronounce(s1, s2, s3):
         # if (s2[2] == 'ㄹ' and s3[1] == 'ㅖ'):  # 김설혜
             # return False
     return True
-
-
-def support_weak_energy(middle_type, saju):
-    if saju['weak1'] == middle_type:
-        # print('[1] ', saju['weak1'], middle_type)
-        return True
-    elif saju['weak2'] == middle_type:
-        # print('[2] ', saju['weak2'], middle_type)
-        return True
-    else:
-        return False
 
 
 def is_good_pronounce(check_set, set_len):
@@ -682,6 +422,8 @@ def is_good_pronounce(check_set, set_len):
     return False
 
 
+# 목 -> 화 -> 토 -> 금 -> 수 -> 목 (생)
+# 토 -> 목 -> 금 -> 화 -> 수 -> 토 (흉)
 def balum_oheng(s1, s2, s3):
     TYPE_DICT = {
         'ㄱ': 'ㄱ', 'ㅋ': 'ㄱ',
@@ -787,128 +529,6 @@ def get_total_strokes(n1, n2, n3=None):
     return total_strokes
 
 
-"""
-"""
-
-
-def type_check_with_strong_energy(strong, row):
-    if strong == '木':
-        if row[4] == '火' or row[4] == '金':
-            return True
-    elif strong == '土':
-        if row[4] == '金' or row[4] == '木':
-            return True
-    elif strong == '火':
-        if row[4] == '土' or row[4] == '水':
-            return True
-    elif strong == '金':
-        if row[4] == '水' or row[4] == '火':
-            return True
-    elif strong == '水':
-        if row[4] == '木' or row[4] == '土':
-            return True
-    return False
-
-
-def type_check_with_month(saju, row):
-    strong = saju['strong']
-    month = saju['month']
-    # 木火土金水
-    if month == '01' or month == '02' or month == '03':
-        if strong == '木' and row[4] == '木':
-            return False
-        elif strong == '木' and row[4] == '水':
-            return False
-        elif strong == '火' and row[4] == '木':
-            return False
-        elif strong == '火' and row[4] == '火':
-            return False
-        elif strong == '土' and row[4] == '水':
-            return False
-        elif strong == '土' and row[4] == '木':
-            return False
-        elif strong == '金' and row[4] == '木':
-            return False
-        elif strong == '金' and row[4] == '水':
-            return False
-        elif strong == '水' and row[4] == '水':
-            return False
-        elif strong == '水' and row[4] == '金':
-            return False
-    elif month == '04' or month == '05' or month == '06':
-        if strong == '木' and row[4] == '火':
-            return False
-        elif strong == '木' and row[4] == '木':
-            return False
-        elif strong == '火' and row[4] == '土':
-            return False
-        elif strong == '火' and row[4] == '木':
-            return False
-        elif strong == '土' and row[4] == '火':
-            return False
-        elif strong == '土' and row[4] == '土':
-            return False
-        elif strong == '金' and row[4] == '火':
-            return False
-        elif strong == '金' and row[4] == '木':
-            return False
-        elif strong == '水' and row[4] == '火':
-            return False
-        elif strong == '水' and row[4] == '木':
-            return False
-    elif month == '07' or month == '08' or month == '09':
-        if strong == '木' and row[4] == '金':
-            return False
-        elif strong == '木' and row[4] == '木':
-            return False
-        elif strong == '火' and row[4] == '金':
-            return False
-        elif strong == '火' and row[4] == '土':
-            return False
-        elif strong == '土' and row[4] == '金':
-            return False
-        elif strong == '土' and row[4] == '水':
-            return False
-        elif strong == '金' and row[4] == '金':
-            return False
-        elif strong == '金' and row[4] == '土':
-            return False
-        elif strong == '水' and row[4] == '水':
-            return False
-        elif strong == '水' and row[4] == '金':
-            return False
-    elif month == '10' or month == '11' or month == '12':
-        if strong == '木' and row[4] == '水':
-            return False
-        elif strong == '木' and row[4] == '木':
-            return False
-        elif strong == '火' and row[4] == '水':
-            return False
-        elif strong == '火' and row[4] == '金':
-            return False
-        elif strong == '土' and row[4] == '水':
-            return False
-        elif strong == '土' and row[4] == '金':
-            return False
-        elif strong == '金' and row[4] == '水':
-            return False
-        elif strong == '金' and row[4] == '木':
-            return False
-        elif strong == '水' and row[4] == '金':
-            return False
-        elif strong == '水' and row[4] == '水':
-            return False
-
-    return True
-
-
-def check_support_type(support_type, middle_type):
-    for i in range(len(support_type)):
-        if middle_type == support_type[i]:
-            return True
-    return False
-
-
 def check_name(temp_name):
     try:
         if BLOCK_LIST[temp_name] == 1:
@@ -942,11 +562,11 @@ def get_random_birth():
 def print_men_women(temp):
     MEN_LAST_NAME = [
         '기', '관',
-        '욱', 
+        '욱',
         '승', '석',
-        '준', 
+        '준',
         '찬',
-        '혁' '훈', '학', 
+        '혁' '훈', '학',
     ]
     WOMEN_LAST_NAME = [
         '미',
@@ -985,7 +605,7 @@ def main():
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
     birth = '200611022321'  # '199611160347'
-    ln = '淳'  #'尙'
+    ln = '淳'  # '尙'
 
     # LAST NAME
     n1 = get_last_name_info(conn, ln)
@@ -1032,13 +652,6 @@ def main():
             continue
         name_list.extend(names)
         cnt += 1
-#        # 자원오행 (보완)
-#        if type_check_with_month(saju, row) is False:
-#            continue
-#        # if type_check_with_strong_energy(saju['strong'], row) is False:
-#        #    continue
-#        if check_support_type(saju['support_type'], row[4]) is False:
-#            continue
     # DBG
     temp = array_remove_duplicates(name_list)
     # print_men_women(temp)
