@@ -217,3 +217,29 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# Last name 자원 오행 타입 추가한 코드
+"""
+    query = 'select hanja from last_name'
+    for row in s1.execute(query):
+        nested_query = "select rsc_type from naming_hanja where hanja='%s'" % row[0]
+        for nested_row in s2.execute(nested_query):
+            if nested_row[0] is None:
+                print(row, nested_row)
+            else:
+                uc = conn.cursor()
+                u_query = "UPDATE last_name SET rsc_type='%s' WHERE hanja='%s'" % (nested_row[0], row[0])
+                uc.execute(u_query)
+                print(u_query)
+
+    conn.commit()
+UPDATE last_name SET rsc_type='火' WHERE hanja='鴌';
+UPDATE last_name SET rsc_type='土' WHERE hanja='郝';
+UPDATE last_name SET rsc_type='木' WHERE hanja='罗';
+UPDATE last_name SET rsc_type='水' WHERE hanja='滕';
+UPDATE last_name SET rsc_type='木' WHERE hanja='杨';
+UPDATE last_name SET rsc_type='金' WHERE hanja='陈';
+UPDATE last_name SET rsc_type='金' WHERE hanja='张';
+"""
+
