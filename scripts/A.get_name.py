@@ -284,7 +284,82 @@ def get_energy_saju(energy):
     # return last_two_weak, max(energy, key=energy.get)
 
 
-def count_5hang(siju_type, iljin_type, wolgeon_type, secha_type):
+# ㅇ 木이 과다한데 火가 없으면 자원오행이 火인 글자를 선택하고, 火가 있으나 金이 없다면 金인 글자를 선택한다.
+# ㅇ 火가 과다한데 土가 없으면 土인 글자를 선택하고, 土가 있으나 水가 없다면 水인 글자를 선택한다.
+# ㅇ 土가 과다한데 金이 없으면 金인 글자를 선택하고, 金이 있으나 木이 없다면 木인 글자를 선택한다.
+# ㅇ 金이 과다한데 水가 없으면 水인 글자를 선택하고, 水가 있으나 火가 없다면 火인 글자를 선택한다.
+# ㅇ 水가 과다한데 木이 없으면 木인 글자를 선택하고, 木이 있으나 土가 없다면 土인 글자를 선택한다.
+def check_complementary_list(many_list, zero_list, exist_list):
+    complementary = []
+    for many in many_list:
+        for zero in zero_list:
+            if many == '木' and zero == '火':
+                complementary.append('火')
+            elif many == '火' and zero == '土':
+                complementary.append('土')
+            elif many == '土' and zero == '金':
+                complementary.append('金')
+            elif many == '金' and zero == '水':
+                complementary.append('水')
+            elif many == '水' and zero == '木':
+                complementary.append('木')
+
+            for exist in exist_list:
+                if exist == '火' and zero == '金':
+                    complementary.append('金')
+                elif exist == '土' and zero == '水':
+                    complementary.append('水')
+                elif exist == '金' and zero == '木':
+                    complementary.append('木')
+                elif exist == '水' and zero == '火':
+                    complementary.append('火')
+                elif exist == '木' and zero == '土':
+                    complementary.append('土')
+    return complementary
+
+
+# 사주에 ‘木’이 3개이상 있을때는 ‘火’ 또는 ‘金’에 해당하는 글자로 작명합니다.
+# 사주에 ‘土’가 3개이상 있을때는 ‘金’ 또는 ‘木’에 해당하는 글자로 작명합니다.
+# 사주에 ‘火’가 3개이상 있을때는 ‘土’ 또는 ‘水’에 해당하는 글자로 작명합니다.
+# 사주에 ‘金’이 3개이상 있을때는 ‘水’ 또는 ‘火’에 해당하는 글자로 작명합니다.
+# 사주에 ‘水’가 3개이상 있을때는 ‘木’ 또는 ‘土’에 해당하는 글자로 작명합니다.
+# 木火土金水
+def check_complementary(many):
+    complementary = []
+    if many == '木':
+        complementary.append('火')
+        complementary.append('金')
+    elif many == '土':
+        complementary.append('金')
+        complementary.append('木')
+    elif many == '火':
+        complementary.append('土')
+        complementary.append('水')
+    elif many == '金':
+        complementary.append('水')
+        complementary.append('火')
+    elif many == '水':
+        complementary.append('木')
+        complementary.append('土')
+    else:
+        return None
+
+    return complementary
+ 
+
+def get_complementary(energy):
+    max_val = energy[max(energy, key=energy.get)]
+    for key, value in energy.items():
+        if value == max_val:
+            many = key
+            break
+    c = check_complementary(many)
+    if c is None:
+        return None
+    return c
+
+
+def count_5heng(siju_type, iljin_type, wolgeon_type, secha_type):
     energy = {
             '木': 0,
             '火': 0,
@@ -441,47 +516,14 @@ def get_saju(conn, birth):
     print('[DBG]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
     print('[DBG] -----------')
 
-    energy = count_5hang(siju_type, iljin_type, wolgeon_type, secha_type)
-    # 신강 or 신약
-    shin = check_shin(iljin, iljin_type, energy)
-    if shin == SHINGANG:
-        # 일간을 약하게
-        result_shin = get_weak_ilgan_type(iljin_type[0])
-        print('신강 -> 약하게', result_shin)
-    else:  # SHINYACK
-        # 일간을 강하게
-        result_shin = get_strong_ilgan_type(iljin_type[0])
-        print('신약 -> 강하게', result_shin)
+    energy = count_5heng(siju_type, iljin_type, wolgeon_type, secha_type)
+    complementary_type = get_complementary(energy)
 
-    # 1. 신약, 신강에 따른 보충
-    support_type.append(result_shin)
 
-    # 2-1. 기운이 없는 것을 보충
-    # 2-2. 약한 기운에 따라 건강을 보충
-    weak_type = sorted(energy.items(), key=lambda x: x[1])
-
-    sh = support_health(weak_type[0][0])
-
-    if weak_type[0][0] == result_shin and weak_type[0][1] == 0:
-        # 기운이 없는 것과, 신강/신약의 결과가 같은 경우
-        if sh is not None:
-            support_type.append(sh)
-        else:
-            support_type.append(weak_type[0][0])
-    else:
-        # 기운이 없는 것과, 신강/신약의 결과가 다른 경우
-        if weak_type[0][1] == 0:
-            support_type.append(weak_type[0][0])
-        else:
-            if sh is not None:
-                support_type.append(sh)
-            else:
-                support_type.append(weak_type[0][0])
-
-    strong = get_energy_saju(energy)
     # print(weaks[0][0], weaks[1][0], strong)
     saju = {
-            'year': year, 'month': month, 'strong': strong,
+            # 'year': year, 'month': month, 'strong': strong,
+            'year': year, 'month': month,
             'support_type': support_type,
             'siju': siju, 'siju_type': siju_type,
             'iljin': iljin, 'iljin_type': iljin_type,
@@ -713,11 +755,6 @@ def get_total_strokes(n1, n2, n3=None):
 
 
 """
- 사주에 ‘木’이 3개이상 있을때는 ‘火’ 또는 ‘金’에 해당하는 글자로 작명합니다.
- 사주에 ‘土’가 3개이상 있을때는 ‘金’ 또는 ‘木’에 해당하는 글자로 작명합니다.
- 사주에 ‘火’가 3개이상 있을때는 ‘土’ 또는 ‘水’에 해당하는 글자로 작명합니다.
- 사주에 ‘金’이 3개이상 있을때는 ‘水’ 또는 ‘火’에 해당하는 글자로 작명합니다.
- 사주에 ‘水’가 3개이상 있을때는 ‘木’ 또는 ‘土’에 해당하는 글자로 작명합니다.
 """
 
 
@@ -926,6 +963,8 @@ def main():
         print('[ERR] get saju failed')
         return
     print('추가해야할 행: ', saju['support_type'])
+# DBG
+    return
 
     name_list = []
     cnt = 0
@@ -970,7 +1009,7 @@ def main():
 #            continue
     # DBG
     temp = array_remove_duplicates(name_list)
-    print_men_women(temp)
+    # print_men_women(temp)
     print(ln, birth)
     print("%.3f sec, Total: %d(%d) -> %d" % ((time() - start_time), len(name_list), cnt, len(temp)))
 
