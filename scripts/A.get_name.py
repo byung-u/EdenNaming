@@ -48,7 +48,7 @@ def check_81_suri(conn, total_strokes):
     s = conn.cursor()
     query = 'SELECT luck_type FROM naming_81 WHERE strokes=%s' % total_strokes
     for row in s.execute(query):
-        if row[0].endswith('吉') is False:  # not 吉
+        if row[0].endswith('吉') is False: 
             return False
     return True
 
@@ -533,7 +533,7 @@ def get_name_list(conn, n1, n2, saju):
     WHERE is_naming_hanja=1 AND reading
     NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천',
     '택', '탁', '태', '외', '사', '매', '읍', '소', '종', '순', '요', '자',
-    '경', '옥', '해', '부', '효', '존')
+    '경', '옥', '해', '부', '효', '존', '난', '류')
     """
     for n3 in s.execute(query):
         if n1[HANJA] == n3[HANJA] or n2[HANJA] == n3[HANJA]:  # 김주김, 김소소
@@ -678,8 +678,8 @@ def main():
     # DBG TEST data
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
-    birth = '199410172113'
-    ln = '夜'
+    # birth = '202305042311'
+    # ln = '候' 
     # LAST NAME
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
@@ -702,8 +702,12 @@ def main():
     NOT IN ('각', '과', '국', '균', '니', '락', '랑', '량', '려', '련', '렬',
     '렴', '령', '료', '류', '률', '린', '면', '목', '복', '부', '빈', '안',
     '엄', '열', '오', '옥', '왕', '요', '욱', '읍', '집', '탁', '표', '필',
-    '해', '회', '후', '흠')
+    '해', '회', '후', '흠',
+    '최', '환', '돈', '률', '간', '갈', '견', '계', '곡', '공', '곽', '궁',
+    '노', '당', '무', '등', '란', '랑', '뢰', '마', '만', '매', '제', '존', 
+    '화')
     """
+# TODO : 니? 리?
     for n2 in s.execute(query):
         if n1[READING] == n2[READING]:  # 장장호
             continue
