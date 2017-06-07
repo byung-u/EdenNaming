@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import sqlite3
+import re
+
+from .get_name import get_name
 
 
 def get_location(location_idx):
@@ -36,23 +39,27 @@ def get_lastname(info):
     c = conn.cursor()
     c.execute(query)
     row = c.fetchone()
-    print(row)
     conn.close()
-    return row
+    return row[1]
 
 
-def get_new_korean_name(gender, birth_order,
-                        location, last_name, birth_datetime):
+def get_new_korean_name(gender, location, last_name, birth_datetime):
     print('---------------------')
-    print(location)
-    print(gender)
-    print(birth_order)
-    print(birth_datetime)
-    print(last_name)
+    # print(location)
+    # print(gender)
+    # print(birth_order)
+    # print(birth_datetime)
+    # print(last_name)
     print('---------------------')
-    get_location(location)
-    get_gender(gender)
-    get_birth_order(birth_order)
-    get_lastname(last_name)
+    # get_location(location)
+    # get_gender(gender)
+    # get_birth_order(birth_order)
+    r = re.compile('[-: ]')
+    birth = ''.join(r.split(birth_datetime))
+    l = get_lastname(last_name)
+    print(l)
+    print(birth)
+    result_name = get_name(birth, l)
+    print(result_name)
     print('---------------------')
-
+    return result_name
