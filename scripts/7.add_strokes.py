@@ -51,8 +51,7 @@ add_radical = {
 def update_add_strokes(table, add_strokes, hanja, conn):
     print(hanja, add_strokes)
     update_flag = conn.cursor()
-    query = 'UPDATE %s SET add_strokes=%s WHERE hanja="%s"' % (table,
-             add_strokes, hanja)
+    query = 'UPDATE %s SET add_strokes=%s WHERE hanja="%s"' % (table, add_strokes, hanja)
     update_flag.execute(query)
     conn.commit()
 

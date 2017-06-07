@@ -69,7 +69,8 @@ def main():
 
 
 def insert_lunar_info(year, month, day, conn):
-    # key = 'IhZSwJv61jxbgIPl2A2B489tudqg3YSP9ojnEqJznLZOWK%2B%2BVQBSrrmQT%2F6ckP63nZAd%2FV%2B%2B2d9PdjNrnvWyuw%3D%3D'
+    # No more use this key, blocked
+    key = 'IhZSwJv61jxbgIPl2A2B489tudqg3YSP9ojnEqJznLZOWK%2B%2BVQBSrrmQT%2F6ckP63nZAd%2FV%2B%2B2d9PdjNrnvWyuw%3D%3D'
     url = 'http://apis.data.go.kr/B090041/openapi/service/LrsrCldInfoService/getLunCalInfo?solYear=%4d&solMonth=%02d&solDay=%02d&ServiceKey=%s' % (year, month, day, key)
 
     req = urllib.request.Request(url)
@@ -89,7 +90,7 @@ def insert_lunar_info(year, month, day, conn):
     r = re.compile(r'[()]')
     c = conn.cursor()
     if soup.lunleapmonth.text == '윤':
-    # 월건이 없음
+        # 월건이 없음
         query = '''
         INSERT INTO gregorian_calendar
         VALUES (%s, %s, %s, %s, %s, %s, "%s", "%s", "%s")''' % (

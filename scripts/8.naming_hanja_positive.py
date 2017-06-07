@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 import sqlite3
-from konlpy.tag import *
+from konlpy.tag import Kkma
 
 list_tag = [u'NNG', u'VV', u'VA', u'VXV', u'UN']
 
@@ -22,7 +22,7 @@ def check_is_possible(pos, list_positive, list_negative, list_neutral, ALL):
     result_neu = naive_bayes_classifier(meaning_res, list_neutral, ALL)
 
     if (result_pos > result_neg and result_pos > result_neu):
-        #print(u'긍정', '+:', result_pos, '-:', result_neg, name)
+        # print(u'긍정', '+:', result_pos, '-:', result_neg, name)
         return True
     else:  # 부정, 중립
         return False
@@ -44,7 +44,7 @@ def getting_list(filename, listname, kkma):
     return listname
 
 
-#naive bayes classifier + smoothing
+# naive bayes classifier + smoothing
 def naive_bayes_classifier(test, train, all_count):
     counter = 0
     list_count = []
@@ -61,7 +61,6 @@ def naive_bayes_classifier(test, train, all_count):
     for i in range(len(list_naive)):
         result *= float(round(list_naive[i], 6))
     return float(result)*float(1.0/3.0)
-
 
 
 def update_naming_flag(conn, hanja):
@@ -98,9 +97,9 @@ def main():
         is_possible = check_is_possible(pos, list_positive, list_negative, list_neutral, ALL)
         if is_possible is False:
             update_naming_flag(conn, row[0])
-            #print(row[0], is_possible)
-            #print('\t\t', meaning)
-        #print(filtered_list, len(filtered_list))
+            # print(row[0], is_possible)
+            # print('\t\t', meaning)
+        # print(filtered_list, len(filtered_list))
 
 #    f_pos.close()
 #    f_neg.close()

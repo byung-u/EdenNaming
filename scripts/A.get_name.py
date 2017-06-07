@@ -48,7 +48,7 @@ def check_81_suri(conn, total_strokes):
     s = conn.cursor()
     query = 'SELECT luck_type FROM naming_81 WHERE strokes=%s' % total_strokes
     for row in s.execute(query):
-        if row[0].endswith('吉') is False: 
+        if row[0].endswith('吉') is False:
             return False
     return True
 
@@ -679,7 +679,7 @@ def main():
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
     # birth = '202305042311'
-    # ln = '候' 
+    # ln = '候'
     # LAST NAME
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
@@ -704,7 +704,7 @@ def main():
     '엄', '열', '오', '옥', '왕', '요', '욱', '읍', '집', '탁', '표', '필',
     '해', '회', '후', '흠',
     '최', '환', '돈', '률', '간', '갈', '견', '계', '곡', '공', '곽', '궁',
-    '노', '당', '무', '등', '란', '랑', '뢰', '마', '만', '매', '제', '존', 
+    '노', '당', '무', '등', '란', '랑', '뢰', '마', '만', '매', '제', '존',
     '화', '위', '겸', '구', '난', '화', '후', '애')
     """
 # TODO : 니? 리?

@@ -242,4 +242,3 @@ UPDATE last_name SET rsc_type='木' WHERE hanja='杨';
 UPDATE last_name SET rsc_type='金' WHERE hanja='陈';
 UPDATE last_name SET rsc_type='金' WHERE hanja='张';
 """
-
