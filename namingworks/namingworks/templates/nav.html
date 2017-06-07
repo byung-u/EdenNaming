@@ -1,14 +1,23 @@
 {% load staticfiles %}
 {% load i18n %}
-<nav class="navbar navbar-toggleable-md fixed-top navbar-inverse bg-inverse">
+<!-- <nav class="navbar navbar-default navbar-fixed-top"> -->
+
+<nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse">
     <div class="container">
-        <!-- <a class="navbar-brand" href="#"><img style="max-width:100px; margin-top: -7px; max-height:200%;" src="{% static "image/spell_i.jpg" %}" alt="I"></a> -->
-        <a class="navbar-brand" href="#">NamingWorks</a>
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Naming</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{% url "index" %}">NamingWorks</a>
+        </div>
+        <!-- Fixed navbar -->
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
+                <li class="active"><a href="{% url "index" %}">Home</a></li>
                 <li><a href="{% url "naming" %}">이용안내</a></li>
-                <li><a href="#contact">고객센터</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">성명학 <span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
@@ -29,36 +38,38 @@
                 </li>
             </ul>
             <!-- Authenticate -->
+            <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                {% if user.profile.image %}
-                <img class="profile-thumb" src="/media/{{ user.profile.image }}" width="32">
-                {% else %}
-                <span class="glyphicon glyphicon-user"></span>
-                {% endif %}
-                {{ user.username }} <span class="caret"></span></a>
+                    {% if user.profile.image %}
+                    <img class="profile-thumb" src="/media/{{ user.profile.image }}" width="32">
+                    {% else %}
+                    <span class="glyphicon glyphicon-user"></span>
+                    {% endif %}
+                    {{ user.username }} <span class="caret"></span></a>
                 <ul class="dropdown-menu" role="menu">
-                {% if my_speaker %}
-                <li class="dropdown-header">{% trans "Profile" %}</li>
-                <li><a href="{{ my_speaker.get_absolute_url }}">{% trans "My Profile" %}</a></li>
-                <li><a href="{% url "speaker_edit" my_speaker.slug %}">{% trans "Edit Profile" %}</a></li>
-                <li class="divider"></li>
-                {% endif %}
-                {% if my_programs %}
-                <li class="dropdown-header">{% trans "Programs" %}</li>
-                {% for program in my_programs %}
-                <li><a href="{{ program.get_absolute_url }}">{{ program.name }}</a></li>
-                {% endfor %}
-                <li role="presentation" class="divider"></li>
-                {% endif %}
-                <li><a href="{% url "logout" %}">{% trans "Logout" %}</a></li>
+                    {% if my_speaker %}
+                    <li class="dropdown-header">{% trans "Profile" %}</li>
+                    <li><a href="{{ my_speaker.get_absolute_url }}">{% trans "My Profile" %}</a></li>
+                    <li><a href="{% url "speaker_edit" my_speaker.slug %}">{% trans "Edit Profile" %}</a></li>
+                    <li class="divider"></li>
+                    {% endif %}
+                    {% if my_programs %}
+                    <li class="dropdown-header">{% trans "Programs" %}</li>
+                    {% for program in my_programs %}
+                    <li><a href="{{ program.get_absolute_url }}">{{ program.name }}</a></li>
+                    <li><a href="{% url "profile" %}">{% trans "Profile" %}</a></li>
+                    {% endfor %}
+                    <li role="presentation" class="divider"></li>
+                    {% endif %}
+                    <li><a href="{% url "logout" %}">{% trans "Logout" %}</a></li>
                 </ul>
             </li>
             {% else %}
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="{% url "login" %} ">로그인</a></li>
-            </ul>
+            <li class="{% if v.active %}active{% endif %}">
+                <a href="{% url "login" %}"><span class="glyphicon glyphicon-user"></span>로그인</a>
+            </li>
             {% endif %}
         </div><!--/.nav-collapse -->
     </div>

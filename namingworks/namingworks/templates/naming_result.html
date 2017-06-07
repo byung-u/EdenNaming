@@ -3,6 +3,7 @@
 {% load i18n %}
 
 {% block nav %}
+
 {% with navbar_class="navbar-translucent" %}
 {% include "nav.html" %}
 {% endwith %}
@@ -13,11 +14,16 @@
         <div class="jumbotron">
             <h3>Result</h3>
             <div class="alert alert-info" role="alert">
-                <h5>Naming result</h5>
+            {% for n in names %}
+            <h5>{{ n }}</h5>
+            {% endfor %}
             </div>
+
+
             <a href="{% url "index" %}" class="btn btn-large btn-primary">Home으로</a>
         </div>
     </div>
 </div>
+
 {% endblock %}
 {% endblock %} 
