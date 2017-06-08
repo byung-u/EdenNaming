@@ -10,8 +10,8 @@ from hangul_utils import hangul_len, split_syllable_char
 from block_list import BLOCK_LIST
 from words_list import WORDS_LIST
 
-SHINGANG = 1
-SHINYACK = 0
+NORMAL = 0
+IGNORE = 1
 
 HANJA = 0
 READING = 1
@@ -44,12 +44,16 @@ def get_last_name_info(conn, hanja):
     return last_name
 
 
-def check_81_suri(conn, total_strokes):
+def check_81_suri(conn, total_strokes, mode):
     s = conn.cursor()
     query = 'SELECT luck_type FROM naming_81 WHERE strokes=%s' % total_strokes
     for row in s.execute(query):
-        if row[0].endswith('吉') is False:
-            return False
+        if mode == NORMAL:
+            if row[0].endswith('吉') is False:  # 여러 케이스 전부 확인
+                return False
+        elif mode == IGNORE:
+            if row[0].endswith('吉') is True:  # 결과가 없어서 무시해야함
+                return True
     return True
 
 
@@ -340,23 +344,23 @@ def get_saju(conn, birth):
     return saju
 
 
-def check_total_stroke(conn, n1, n2, n3):
+def check_total_stroke(conn, n1, n2, n3, mode):
     t1 = get_total_strokes(n1, n3, None)
     if t1 == 0:
         return False
-    if check_81_suri(conn, t1) is False:  # (홍) 길 (동)
+    if check_81_suri(conn, t1, mode) is False:  # (홍) 길 (동)
         return False
 
     t2 = get_total_strokes(n2, n3, None)
     if t2 == 0:
         return False
-    if check_81_suri(conn, t2) is False:  # 홍 (길+동)
+    if check_81_suri(conn, t2, mode) is False:  # 홍 (길+동)
         return False
 
     t3 = get_total_strokes(n1, n2, n3)
     if t3 == 0:
         return False
-    if check_81_suri(conn, t3) is False:  # (홍+길+동)
+    if check_81_suri(conn, t3, mode) is False:  # (홍+길+동)
         return False
 
     return True
@@ -524,7 +528,7 @@ def balum_oheng(s1, s2, s3):
     return is_good_pronounce(check_set, len(check_set))
 
 
-def get_name_list(conn, n1, n2, saju):
+def get_name_list(conn, n1, n2, saju, mode):
     name_list = []
     s = conn.cursor()
     query = """
@@ -552,7 +556,7 @@ def get_name_list(conn, n1, n2, saju):
             continue
 
         # check positive negative hanja strokes as well
-        if check_total_stroke(conn, n1, n2, n3) is False:
+        if check_total_stroke(conn, n1, n2, n3, mode) is False:
             continue
 
         s1 = split_syllable_char(n1[READING])
@@ -574,24 +578,24 @@ def get_name_list(conn, n1, n2, saju):
 
 
 def get_total_strokes(n1, n2, n3=None):
-    if n1[3] is None:
-        n1_strk = int(n1[2])
+    if n1[ADD_STROKES] is None:
+        n1_strk = int(n1[STROKES])
     else:
-        n1_strk = int(n1[2]) + int(n1[3])
+        n1_strk = int(n1[STROKES]) + int(n1[ADD_STROKES])
 
-    if n2[3] is None:
-        n2_strk = int(n2[2])
+    if n2[ADD_STROKES] is None:
+        n2_strk = int(n2[STROKES])
     else:
-        n2_strk = int(n2[2]) + int(n2[3])
+        n2_strk = int(n2[STROKES]) + int(n2[ADD_STROKES])
 
     if n3 is None:
         total_strokes = n1_strk + n2_strk
         # print(n1[2], n1[3], n2[2], n2[3], '---> ', total_strokes)
     else:
-        if n3[3] is None:
-            n3_strk = int(n3[2])
+        if n3[ADD_STROKES] is None:
+            n3_strk = int(n3[STROKES])
         else:
-            n3_strk = int(n3[2]) + int(n3[3])
+            n3_strk = int(n3[STROKES]) + int(n3[ADD_STROKES])
         # 획수음양
         if n1_strk % 2 == 0 and n2_strk % 2 == 0 and n3_strk % 2 == 0:
             return 0  # 획수가 모두 짝수는 불가
@@ -671,26 +675,7 @@ def print_men_women(temp):
     print("BOTH : ", both)
 
 
-def main():
-    start_time = time()  # START
-    conn = sqlite3.connect('naming_korean.db')
-
-    # DBG TEST data
-    birth = get_random_birth()  # '200103010310'  # '200203011201'
-    ln = get_one_last_name()
-    # birth = '202305042311'
-    # ln = '候'
-    # LAST NAME
-    n1 = get_last_name_info(conn, ln)
-    if n1 is None:
-        return
-
-    # SAJU
-    saju = get_saju(conn, birth)
-    if saju is None:
-        print('[ERR] get saju failed')
-        return
-
+def get_names(conn, n1, saju, mode=NORMAL):
     name_list = []
     cnt = 0
     s = conn.cursor()
@@ -707,7 +692,7 @@ def main():
     '노', '당', '무', '등', '란', '랑', '뢰', '마', '만', '매', '제', '존',
     '화', '위', '겸', '구', '난', '화', '후', '애')
     """
-# TODO : 니? 리?
+
     for n2 in s.execute(query):
         if n1[READING] == n2[READING]:  # 장장호
             continue
@@ -720,23 +705,52 @@ def main():
             continue
 
         ts = get_total_strokes(n1, n2, None)
-        if ts == 0 or check_81_suri(conn, ts) is False:  # (홍+길) 동
+        if ts == 0 or check_81_suri(conn, ts, mode) is False:  # (홍+길) 동
             continue
 
         if check_two_words_hard_pronounce(n1[READING], n2[READING]) is False:
             continue
 
-        names = get_name_list(conn, n1, n2, saju)
+        names = get_name_list(conn, n1, n2, saju, mode)
         if names is None:
             continue
         name_list.extend(names)
         cnt += 1
+    return name_list, cnt
+
+
+def main():
+    start_time = time()  # START
+    conn = sqlite3.connect('naming_korean.db')
+
+    # DBG TEST data
+    birth = get_random_birth()  # '200103010310'  # '200203011201'
+    ln = get_one_last_name()
+    # birth = '202305042311'
+    # ln = '候'
+    # LAST NAME
+
+    n1 = get_last_name_info(conn, ln)
+    if n1 is None:
+        return
+
+    # SAJU
+    saju = get_saju(conn, birth)
+    if saju is None:
+        print('[ERR] get saju failed')
+        return
+
+    name_list, cnt = get_names(conn, n1, saju, NORMAL)
+    names = array_remove_duplicates(name_list)
     # DBG
-    temp = array_remove_duplicates(name_list)
-    # print_men_women(temp)
-    print(temp)
+    if len(names) < 3:
+        print('Names not found')
+        name_list, cnt = get_names(conn, n1, saju, IGNORE)
+        names = array_remove_duplicates(name_list)
+
+    print(names)
     print(ln, birth)
-    print("%.3f sec, Total: %d(%d) -> %d" % ((time() - start_time), len(name_list), cnt, len(temp)))
+    print("%.3f sec, Total: %d(%d) -> %d" % ((time() - start_time), len(name_list), cnt, len(names)))
 
     conn.close()  # db close
     return
