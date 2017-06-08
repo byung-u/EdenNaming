@@ -18,6 +18,7 @@ READING = 1
 STROKES = 2
 ADD_STROKES = 3
 RSC_TYPE = 4
+PRONUNCIATIONS = 5
 
 # DBG
 LAST_NAME_LIST = ['丁', '丕', '丘', '主', '乃', '于', '京', '仇', '付', '任', '伊', '伍', '余', '侯', '倉', '候', '傅', '元', '全', '兪', '公', '具', '初', '判', '剛', '劉', '包', '化', '千', '卓', '南', '卜', '卞', '占', '印', '叢', '史', '吉', '后', '吳', '呂', '周', '咸', '唐', '喬', '單', '嚴', '國', '堅', '增', '墨', '夏', '多', '夜', '大', '天', '太', '夫', '奇', '奈', '奉', '姚', '姜', '孔', '孟', '孫', '安', '宋', '宗', '宣', '寶', '尙', '尹', '山', '崔', '左', '平', '康', '庾', '廉', '延', '弓', '张', '張', '强', '弼', '彈', '彬', '彭', '影', '徐', '愼', '慈', '慶', '成', '戰', '房', '扈', '承', '文', '斤', '方', '施', '昇', '昌', '明', '昔', '星', '晋', '景', '智', '曲', '曺', '曾', '朱', '朴', '杉', '李', '杜', '杨', '松', '林', '柳', '柴', '桂', '梁', '梅', '森', '楊', '楔', '楚', '榮', '樊', '橋', '權', '欒', '武', '段', '殷', '毛', '水', '氷', '江', '池', '沈', '沙', '河', '洙', '洪', '浪', '海', '淳', '湯', '溫', '滕', '漢', '潘', '燕', '片', '牟', '玄', '玉', '王', '班', '琴', '甄', '甘', '田', '申', '畢', '異', '白', '皮', '盧', '眞', '睦', '石', '禹', '秋', '秦', '程', '章', '箕', '管', '簡', '米', '罗', '羅', '耿', '胡', '臧', '舍', '舜', '艾', '芮', '芸', '苑', '苗', '范', '荀', '莊', '菊', '萬', '葉', '葉', '葛', '董', '蔡', '蔣', '薛', '蘇', '衛', '表', '袁', '裵', '解', '許', '諸', '謝', '譚', '谷', '賀', '賈', '賓', '趙', '路', '車', '辛', '連', '道', '邊', '邕', '邢', '邦', '邱', '邵', '郝', '郭', '都', '鄒', '鄧', '鄭', '采', '釋', '金', '錢', '鍾', '鎬', '閔', '閻', '關', '阮', '阿', '陈', '陰', '陳', '陶', '陸', '隋', '雍', '雲', '雷', '鞠', '韋', '韓', '順', '頓', '顧', '馬', '馮', '高', '魏', '魚', '魯', '鳳', '鴌', '麻', '黃', '黎', '齊', '龍', '龐', ]
@@ -528,11 +529,11 @@ def balum_oheng(s1, s2, s3):
     return is_good_pronounce(check_set, len(check_set))
 
 
-def get_name_list(conn, n1, n2, saju, mode):
-    name_list = []
+def get_middle_name(conn, n1, n2, saju, mode):
+    name_dict = {}
     s = conn.cursor()
     query = """
-    SELECT hanja,reading,strokes,add_strokes,rsc_type
+    SELECT hanja,reading,strokes,add_strokes,rsc_type,pronunciations
     FROM naming_hanja
     WHERE is_naming_hanja=1 AND reading
     NOT IN ('만', '병', '백', '장', '춘', '최', '충', '창', '치', '참', '천',
@@ -568,13 +569,14 @@ def get_name_list(conn, n1, n2, saju, mode):
         if check_all_name_hard_pronounce(s1, s2, s3) is False:
             continue
 
-        temp_name = '%s%s%s' % (n1[1], n2[1], n3[1])
-        name_list.append(temp_name)
+        temp_hanja = '%s %s(%s)%s(%s)' % (n1[HANJA],
+                n2[HANJA], n2[PRONUNCIATIONS], n3[HANJA], n3[PRONUNCIATIONS])
+        temp_name = '%s%s%s' % (n1[READING], n2[READING], n3[READING])
+        name_dict.update({temp_hanja: temp_name})
 
-    if len(name_list) == 0:
+    if len(name_dict) == 0:
         return None
-
-    return name_list
+    return name_dict
 
 
 def get_total_strokes(n1, n2, n3=None):
@@ -676,11 +678,11 @@ def print_men_women(temp):
 
 
 def get_names(conn, n1, saju, mode=NORMAL):
-    name_list = []
+    name_dict = {}
     cnt = 0
     s = conn.cursor()
     query = """
-    SELECT hanja,reading,strokes,add_strokes,rsc_type
+    SELECT hanja,reading,strokes,add_strokes,rsc_type,pronunciations
     FROM naming_hanja
     WHERE is_naming_hanja=1
     AND reading
@@ -711,12 +713,12 @@ def get_names(conn, n1, saju, mode=NORMAL):
         if check_two_words_hard_pronounce(n1[READING], n2[READING]) is False:
             continue
 
-        names = get_name_list(conn, n1, n2, saju, mode)
+        names = get_middle_name(conn, n1, n2, saju, mode)
         if names is None:
             continue
-        name_list.extend(names)
+        name_dict.update(names)
         cnt += 1
-    return name_list, cnt
+    return name_dict, cnt
 
 
 def main():
@@ -729,6 +731,14 @@ def main():
     # birth = '202305042311'
     # ln = '候'
     # LAST NAME
+    birth = '199902232259'
+    ln = '高'
+    birth = '200207200637'
+    ln = '喬'
+    birth = '201606180753'
+    ln = '任'
+    birth = '200902221354'
+    ln = '丁'
 
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
@@ -740,17 +750,17 @@ def main():
         print('[ERR] get saju failed')
         return
 
-    name_list, cnt = get_names(conn, n1, saju, NORMAL)
-    names = array_remove_duplicates(name_list)
+    name_dict, cnt = get_names(conn, n1, saju, NORMAL)
+    # names = array_remove_duplicates(name_dict)
     # DBG
-    if len(names) < 3:
+    if len(name_dict) < 3:
         print('Names not found')
-        name_list, cnt = get_names(conn, n1, saju, IGNORE)
-        names = array_remove_duplicates(name_list)
+        name_dict, cnt = get_names(conn, n1, saju, IGNORE)
+        # names = array_remove_duplicates(name_dict)
 
-    print(names)
+    print(name_dict)
     print(ln, birth)
-    print("%.3f sec, Total: %d(%d) -> %d" % ((time() - start_time), len(name_list), cnt, len(names)))
+    print("%.3f sec Total: %d(%d)" % ((time() - start_time), len(name_dict), cnt))
 
     conn.close()  # db close
     return
