@@ -30,6 +30,7 @@ def create_naming_hanja_table():
     "is_naming_hanja" char(1) NULL,
     "meaning" text NULL,
     "reading" char(1) NULL,
+    "pronunciations" varchar(32) NULL,
     "reading_strokes" integer NULL,
     "radical" char(1) NULL,
     "radical_info" varchar(128) NULL,
