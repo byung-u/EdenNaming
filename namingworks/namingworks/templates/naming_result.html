@@ -14,13 +14,17 @@
         <div class="jumbotron">
             <h3>Result</h3>
             <div class="alert alert-info" role="alert">
-            {% for n in names %}
-            <h5>{{ n }}</h5>
-            {% endfor %}
+                <select id="id_construction_type" name="construction_type" class="form-control input-md">
+                    {% for hanja, name in names.items %}
+                    <option value="{{ hanja }}"{% if hanja == value %} selected {% endif %}>
+                    {{ name }}   {{ hanja }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+
             </div>
-
-
-            <a href="{% url "index" %}" class="btn btn-large btn-primary">Home으로</a>
+                    <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-large btn-primary">결과화면으로</a>
         </div>
     </div>
 </div>
