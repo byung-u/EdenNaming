@@ -569,7 +569,7 @@ def get_middle_name(conn, n1, n2, saju, mode):
         if check_all_name_hard_pronounce(s1, s2, s3) is False:
             continue
 
-        temp_hanja = '%s %s %s [%s, %s]' % (n1[HANJA], n2[HANJA], n3[HANJA],
+        temp_hanja = '%s %s %s [%s/ %s]' % (n1[HANJA], n2[HANJA], n3[HANJA],
                 n2[PRONUNCIATIONS], n3[PRONUNCIATIONS])
         temp_name = '%s%s%s' % (n1[READING], n2[READING], n3[READING])
         name_dict.update({temp_hanja: temp_name})
