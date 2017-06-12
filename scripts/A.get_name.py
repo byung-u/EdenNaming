@@ -4,14 +4,22 @@ import sqlite3
 
 from time import time
 from random import randrange
+from randomdict import RandomDict
 
 # /usr/local/lib/python3.6/site-packages/hangul_utils
 from hangul_utils import hangul_len, split_syllable_char
 from block_list import BLOCK_LIST
 from words_list import WORDS_LIST
+from use_name_list import (MALE_MIDDLE_DICT, FEMALE_MIDDLE_DICT,
+                           MALE_LAST_DICT, FEMALE_LAST_DICT,
+                           MALE_NAME_DICT, FEMALE_NAME_DICT,
+                           NEUTRAL_NAME_DICT)
 
 NORMAL = 0
 IGNORE = 1
+
+MALE = 0
+FEMALE = 1
 
 HANJA = 0
 READING = 1
@@ -241,21 +249,21 @@ def get_5types(h10gan, h12ji):
 # 사주에 ‘金’이 3개이상 있을때는 ‘水’ 또는 ‘火’에 해당하는 글자로 작명합니다.
 # 사주에 ‘水’가 3개이상 있을때는 ‘木’ 또는 ‘土’에 해당하는 글자로 작명합니다.
 # 木火土金水
-def check_complementary(many):
+def check_complementary(strong_energy):
     complementary = []
-    if many == '木':
+    if strong_energy == '木':
         complementary.append('火')
         complementary.append('金')
-    elif many == '土':
+    elif strong_energy == '土':
         complementary.append('金')
         complementary.append('木')
-    elif many == '火':
+    elif strong_energy == '火':
         complementary.append('土')
         complementary.append('水')
-    elif many == '金':
+    elif strong_energy == '金':
         complementary.append('水')
         complementary.append('火')
-    elif many == '水':
+    elif strong_energy == '水':
         complementary.append('木')
         complementary.append('土')
     else:
@@ -265,15 +273,16 @@ def check_complementary(many):
 
 
 def get_complementary(energy):
-    max_val = energy[max(energy, key=energy.get)]
+    strong = max(energy, key=energy.get)
+    max_val = energy[strong]
     for key, value in energy.items():
         if value == max_val:
-            many = key
+            strong_cnt = key
             break
-    c = check_complementary(many)
+    c = check_complementary(strong_cnt)
     if c is None:
         return None
-    return c
+    return c, strong
 
 
 def count_5heng(siju_type, iljin_type, wolgeon_type, secha_type):
@@ -320,23 +329,24 @@ def get_saju(conn, birth):
     secha_type = get_5types(secha[0], secha[1])
     if secha_type is None:
         return None
-    print('[DBG] -----------')
-    print('[DBG] 시 일 월 년')
-    print('[DBG] -----------')
-    print('[D간]', siju[0], iljin[0], wolgeon[0], secha[0])
-    print('[D지]', siju[1], iljin[1], wolgeon[1], secha[1])
-    print('[DBG] -----------')
-    print('[DBG]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
-    print('[DBG]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
-    print('[DBG] -----------')
+    # print('[DBG] -----------')
+    # print('[DBG] 시 일 월 년')
+    # print('[DBG] -----------')
+    # print('[D간]', siju[0], iljin[0], wolgeon[0], secha[0])
+    # print('[D지]', siju[1], iljin[1], wolgeon[1], secha[1])
+    # print('[DBG] -----------')
+    # print('[DBG]', siju_type[0], iljin_type[0], wolgeon_type[0], secha_type[0])
+    # print('[DBG]', siju_type[1], iljin_type[1], wolgeon_type[1], secha_type[1])
+    # print('[DBG] -----------')
 
     energy = count_5heng(siju_type, iljin_type, wolgeon_type, secha_type)
-    complementary_type = get_complementary(energy)
+    complementary_type, strong_energy = get_complementary(energy)
 
     saju = {
         'year': year, 'month': month,
         'c1':  complementary_type[0],
         'c2':  complementary_type[1],
+        'strong':  strong_energy,
         'siju': siju, 'siju_type': siju_type,
         'iljin': iljin, 'iljin_type': iljin_type,
         'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
@@ -529,7 +539,7 @@ def balum_oheng(s1, s2, s3):
     return is_good_pronounce(check_set, len(check_set))
 
 
-def get_middle_name(conn, n1, n2, saju, mode):
+def get_middle_name(conn, n1, n2, saju, gender, n2_rsc_type, mode):
     name_dict = {}
     s = conn.cursor()
     query = """
@@ -546,11 +556,16 @@ def get_middle_name(conn, n1, n2, saju, mode):
         elif n1[READING] == n3[READING] or n2[READING] == n3[READING]:  # 김주김, 김소소
             continue
 
-        n2n3 = '%s%s' % (n2[1], n3[1])
+        n2n3 = '%s%s' % (n2[READING], n3[READING])
         if check_name(n2n3) is False:
             continue
 
-        if saju['c1'] != n2[RSC_TYPE] and saju['c2'] != n3[RSC_TYPE]:
+        if check_last_name_gender(n3[READING], n2n3, gender) is False:
+            continue
+
+        if saju['c1'] != n3[RSC_TYPE] and saju['c2'] != n3[RSC_TYPE]:
+            continue
+        if n2_rsc_type == n3[RSC_TYPE]:  # 중간이름에서 사용한 자원오행은 배제함
             continue
 
         if check_positive_negative(conn, n1, n2, n3) is False:
@@ -569,8 +584,9 @@ def get_middle_name(conn, n1, n2, saju, mode):
         if check_all_name_hard_pronounce(s1, s2, s3) is False:
             continue
 
-        temp_hanja = '%s %s %s [%s/ %s]' % (n1[HANJA], n2[HANJA], n3[HANJA],
-                n2[PRONUNCIATIONS], n3[PRONUNCIATIONS])
+        temp_hanja = '%s%s%s' % (n1[HANJA], n2[HANJA], n3[HANJA])
+        # temp_hanja = '%s %s %s [%s/ %s]' % (n1[HANJA], n2[HANJA], n3[HANJA],
+        #         n2[PRONUNCIATIONS], n3[PRONUNCIATIONS])
         temp_name = '%s%s%s' % (n1[READING], n2[READING], n3[READING])
         name_dict.update({temp_hanja: temp_name})
 
@@ -677,7 +693,57 @@ def print_men_women(temp):
     print("BOTH : ", both)
 
 
-def get_names(conn, n1, saju, mode=NORMAL):
+def check_middle_name_gender(middle, name, gender):
+    if gender == FEMALE:
+        try:
+            if MALE_MIDDLE_DICT[middle] == 1:
+                return False
+        except:
+            try:
+                if MALE_NAME_DICT[name] == 1:
+                    return False
+            except:
+                return True
+    else:  # gender == MALE
+        try:
+            if FEMALE_MIDDLE_DICT[middle] == 1:
+                return False
+        except:
+            try:
+                if FEMALE_NAME_DICT[name] == 1:
+                    return False
+            except:
+                return True
+        return True
+
+
+def check_last_name_gender(last, name, gender):
+    if gender == FEMALE:
+        try:
+            if MALE_LAST_DICT[last] == 1:
+                return False
+        except:
+            try:
+                if MALE_NAME_DICT[name] == 1:
+                    return False
+            except:
+                return True
+        return True
+    else:  # gender == MALE
+        try:
+            if FEMALE_LAST_DICT[last] == 1:
+                return False
+        except:
+            try:
+                if FEMALE_NAME_DICT[name] == 1:
+                    return False
+            except:
+                return True
+        return True
+    return True
+
+
+def get_names(conn, n1, saju, gender, mode=NORMAL):
     name_dict = {}
     cnt = 0
     s = conn.cursor()
@@ -703,6 +769,9 @@ def get_names(conn, n1, saju, mode=NORMAL):
         if check_name(n1n2) is False:
             continue
 
+        if check_middle_name_gender(n2[READING], n1n2, gender) is False:
+            continue
+
         if saju['c1'] != n2[RSC_TYPE] and saju['c2'] != n2[RSC_TYPE]:
             continue
 
@@ -713,12 +782,126 @@ def get_names(conn, n1, saju, mode=NORMAL):
         if check_two_words_hard_pronounce(n1[READING], n2[READING]) is False:
             continue
 
-        names = get_middle_name(conn, n1, n2, saju, mode)
+        names = get_middle_name(conn, n1, n2, saju, gender, n2[RSC_TYPE], mode)
         if names is None:
             continue
         name_dict.update(names)
         cnt += 1
     return name_dict, cnt
+
+
+def get_rsc_type(conn, hanja):
+    rsc_type = []
+    s = conn.cursor()
+    for i in range(1, len(hanja)):
+        query = 'SELECT rsc_type FROM naming_hanja where hanja="%s"' % hanja[i]
+        s.execute(query)
+        row = s.fetchone()
+        if row is None:
+            print('SELECT failed, hanja=', hanja)
+            return None
+        rsc_type.append(row[0])
+
+    return rsc_type
+
+
+def get_suri_hanja(conn, hanja):
+    suri_81 = []
+    s = conn.cursor()
+    for i in range(len(hanja)):
+        query = 'SELECT strokes,add_strokes FROM naming_hanja where hanja="%s"' % hanja[i]
+        s.execute(query)
+        row = s.fetchone()
+        if row is None:
+            print('SELECT failed, hanja=', hanja)
+            return None
+
+        strokes = list(row)
+        if strokes[1] is None:
+            suri_81.append(int(strokes[0]))
+        else:
+            suri_81.append(int(strokes[0]) + int(strokes[1]))
+
+    if len(suri_81) == 3:
+        suri_81.append(suri_81[0] + suri_81[1])
+        suri_81.append(suri_81[1] + suri_81[2])
+        suri_81.append(suri_81[2] + suri_81[0])
+        suri_81.append(suri_81[0] + suri_81[1] + suri_81[2])
+        if suri_81[0] % 2 == 0:
+            suri_81[0] = '음'
+        else:
+            suri_81[0] = '양'
+        if suri_81[1] % 2 == 0:
+            suri_81[1] = '음'
+        else:
+            suri_81[1] = '양'
+        if suri_81[2] % 2 == 0:
+            suri_81[2] = '음'
+        else:
+            suri_81[2] = '양'
+    return suri_81
+
+
+def get_suri_hangul(hangul):
+    suri_pn = []  # pm: positive, negative
+    s = hangul_len(hangul[0])
+    if s % 2 == 0:
+        suri_pn.append('음')
+    else:
+        suri_pn.append('양')
+
+    s = hangul_len(hangul[1])
+    if s % 2 == 0:
+        suri_pn.append('음')
+    else:
+        suri_pn.append('양')
+
+    s = hangul_len(hangul[2])
+    if s % 2 == 0:
+        suri_pn.append('음')
+    else:
+        suri_pn.append('양')
+    return suri_pn
+
+
+def create_result_message(conn, saju, hanja, hangul):
+    suri_hangul = get_suri_hangul(hangul)
+    suri_hanja = get_suri_hanja(conn, hanja)
+    rsc_type = get_rsc_type(conn, hanja)
+    new_name = """
+성명: %s [%s]
+
+-----------
+時 日 月 年
+-----------
+%s %s %s %s
+%s %s %s %s
+-----------
+%s %s %s %s
+%s %s %s %s
+-----------
+
+수리음양: %s%s%s 조화를 이룬다.
+발음오행: %s%s%s 조화를 이룬다.
+수리사격: 모두 좋은 작용의 吉격 수리로 구성되어있다.
+          元: %s  亨: %s  利: %s  貞: %s (획)
+자원오행: 사주구성과 오행을 분석한 결과  %s, %s 기운을 가진 글자를 사용해야
+         사주구성의 부족한 부분을 보완하여 도움이 된다.
+         %s(%s) %s(%s)의 기운으로 도움을 준다.
+불용한자: 없음
+
+""" % (hangul, hanja,
+       saju['siju'][0], saju['iljin'][0], saju['wolgeon'][0], saju['secha'][0],
+       saju['siju'][1], saju['iljin'][1], saju['wolgeon'][1], saju['secha'][1],
+       saju['siju_type'][0], saju['iljin_type'][0], saju['wolgeon_type'][0], saju['secha_type'][0],
+       saju['siju_type'][1], saju['iljin_type'][1], saju['wolgeon_type'][1], saju['secha_type'][1],
+       suri_hanja[0], suri_hanja[1], suri_hanja[2],
+       suri_hangul[0], suri_hangul[1], suri_hangul[2],
+       suri_hanja[3], suri_hanja[4], suri_hanja[5], suri_hanja[6],
+       saju['c1'], saju['c2'],
+       hanja[1], rsc_type[0], hanja[2], rsc_type[1])
+
+    return new_name
 
 
 def main():
@@ -728,17 +911,7 @@ def main():
     # DBG TEST data
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
-    # birth = '202305042311'
-    # ln = '候'
-    # LAST NAME
-    birth = '199902232259'
-    ln = '高'
-    birth = '200207200637'
-    ln = '喬'
-    birth = '201606180753'
-    ln = '任'
-    birth = '200902221354'
-    ln = '丁'
+    gender = MALE
 
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
@@ -750,18 +923,20 @@ def main():
         print('[ERR] get saju failed')
         return
 
-    name_dict, cnt = get_names(conn, n1, saju, NORMAL)
-    # names = array_remove_duplicates(name_dict)
-    # DBG
+    name_dict, cnt = get_names(conn, n1, saju, gender, NORMAL)
     if len(name_dict) < 3:
         print('Names not found')
-        name_dict, cnt = get_names(conn, n1, saju, IGNORE)
+        name_dict, cnt = get_names(conn, n1, saju, gender, IGNORE)
         # names = array_remove_duplicates(name_dict)
 
-    print(name_dict)
-    print(ln, birth)
-    print("%.3f sec Total: %d(%d)" % ((time() - start_time), len(name_dict), cnt))
+    choose = RandomDict(name_dict)
+    new_name_info = create_result_message(conn, saju,
+                                          choose.random_item()[0],
+                                          choose.random_item()[1])
 
+    print(new_name_info)
+    print(ln, birth, gender)
+    print("%.3f sec Total: %d(%d)" % ((time() - start_time), len(name_dict), cnt))
     conn.close()  # db close
     return
 
