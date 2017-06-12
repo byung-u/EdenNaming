@@ -18,8 +18,8 @@ from use_name_list import (MALE_MIDDLE_DICT, FEMALE_MIDDLE_DICT,
 NORMAL = 0
 IGNORE = 1
 
-MALE = 0
-FEMALE = 1
+MALE = 1
+FEMALE = 2
 
 HANJA = 0
 READING = 1
@@ -189,17 +189,21 @@ def yundal_to_pyoungdal(conn, year, month, day):
 def get_secha_wolgeon_iljin(conn, year, month, day):
     s = conn.cursor()
     query = '''
-    SELECT lun_secha, lun_wolgeon, lun_iljin
+    SELECT lun_secha, lun_wolgeon, lun_iljin, lun_year, lun_month, lun_day
     FROM gregorian_calendar
     WHERE sol_year=%s and sol_month=%s and sol_day=%s
     ''' % (year, month, day)
     s.execute(query)
     row = s.fetchone()
+    lun_date = []
+    lun_date.append(row[3])
+    lun_date.append(row[4])
+    lun_date.append(row[5])
     if row[1] == '-':
         pyoungdal = yundal_to_pyoungdal(conn, year, month, day)
-        return row[0], pyoungdal, row[2]
+        return row[0], pyoungdal, row[2], lun_date
     else:
-        return row[0], row[1], row[2]
+        return row[0], row[1], row[2], lun_date
 
 
 def get_h10gan_5types(h10gan):
@@ -314,7 +318,7 @@ def get_saju(conn, birth):
     month = birth[4:6]
     day = birth[6:8]
     hour = birth[8:10]
-    secha, wolgeon, iljin = get_secha_wolgeon_iljin(conn, year, month, day)
+    secha, wolgeon, iljin, lun_date = get_secha_wolgeon_iljin(conn, year, month, day)
     siju = get_siju(iljin[0], int(hour))  # siju : hour
 
     siju_type = get_5types(siju[0], siju[1])
@@ -343,15 +347,17 @@ def get_saju(conn, birth):
     complementary_type, strong_energy = get_complementary(energy)
 
     saju = {
-        'year': year, 'month': month,
-        'c1':  complementary_type[0],
-        'c2':  complementary_type[1],
-        'strong':  strong_energy,
-        'siju': siju, 'siju_type': siju_type,
-        'iljin': iljin, 'iljin_type': iljin_type,
-        'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
-        'secha': secha, 'secha_type': secha_type,
-    }
+            'year': year, 'month': month.replace('0', ''),
+            'day': day.replace('0', ''), 'hour': hour,
+            'lun_year': lun_date[0], 'lun_month': lun_date[1], 'lun_day': lun_date[2],
+            'c1':  complementary_type[0],
+            'c2':  complementary_type[1],
+            'strong':  strong_energy,
+            'siju': siju, 'siju_type': siju_type,
+            'iljin': iljin, 'iljin_type': iljin_type,
+            'wolgeon': wolgeon, 'wolgeon_type': wolgeon_type,
+            'secha': secha, 'secha_type': secha_type,
+            }
     return saju
 
 
@@ -813,8 +819,13 @@ def get_suri_hanja(conn, hanja):
         s.execute(query)
         row = s.fetchone()
         if row is None:
-            print('SELECT failed, hanja=', hanja)
-            return None
+            last_s = conn.cursor()
+            query = 'SELECT strokes,add_strokes FROM last_name where hanja="%s"' % hanja[i]
+            last_s.execute(query)
+            last_row = last_s.fetchone()
+            print('get_suri_hanja SELECT failed, hanja=', hanja)
+            if last_row is None:
+                return None
 
         strokes = list(row)
         if strokes[1] is None:
@@ -863,34 +874,138 @@ def get_suri_hangul(hangul):
         suri_pn.append('양')
     return suri_pn
 
+def get_name_hanja(conn, hanja):
+    hanja_info = []
+    s = conn.cursor()
+    for i in range(len(hanja)):
+        query = 'SELECT pronunciations FROM naming_hanja where hanja="%s"' % hanja[i]
+        s.execute(query)
+        row = s.fetchone()
+        if row is None:
+            last_s = conn.cursor()
+            query = 'SELECT pronunciations FROM last_name where hanja="%s"' % hanja[i]
+            last_s.execute(query)
+            last_row = last_s.fetchone()
+            print('get_suri_hanja SELECT failed, hanja=', hanja)
+            if last_row is None:
+                return None
+        hanja_info.append(row[0])
+    return hanja_info
+
 
 def create_result_message(conn, saju, hanja, hangul):
+    name_hanja = get_name_hanja(conn, hanja)
     suri_hangul = get_suri_hangul(hangul)
     suri_hanja = get_suri_hanja(conn, hanja)
     rsc_type = get_rsc_type(conn, hanja)
+
     new_name = """
-성명: %s [%s]
-
------------
-時 日 月 年
------------
-%s %s %s %s
-%s %s %s %s
------------
-%s %s %s %s
-%s %s %s %s
------------
-
-수리음양: %s%s%s 조화를 이룬다.
-발음오행: %s%s%s 조화를 이룬다.
-수리사격: 모두 좋은 작용의 吉격 수리로 구성되어있다.
-          元: %s  亨: %s  利: %s  貞: %s (획)
-자원오행: 사주구성과 오행을 분석한 결과  %s, %s 기운을 가진 글자를 사용해야
-         사주구성의 부족한 부분을 보완하여 도움이 된다.
-         %s(%s) %s(%s)의 기운으로 도움을 준다.
-불용한자: 없음
-
-""" % (hangul, hanja,
+<table class="table">
+    <thead>
+        <th>성명: </th>
+        <th> %s  %s%s[%s %s<small>%s</small> %s<small>%s</small>] </th>
+        <th>  </th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>  </td>
+            <td>  </td>
+            <td>  </td>
+        </tr>
+        <tr>
+            <td> 양력: </td>
+            <td>  %s년% 02s월 %02s일 %s시 </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> 음력: </td>
+            <td> %s년% 02s월 %02s일 </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> 四柱 </td>
+            <td> 時 日 月 年 </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> <strong>%s %s %s %s </strong> </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> <strong>%s %s %s %s </strong> </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> %s %s %s %s </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> %s %s %s %s </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> 수리음양: </td>
+            <td> <mark>%s%s%s</mark> 조화를 이룬다. </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> 발음오행: </td>
+            <td> <mark>%s%s%s</mark> 조화를 이룬다.  </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> 수리사격: </td>
+            <td> 모두 좋은 작용의 吉격 수리로 구성되어있다. </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> <mark> 元: %s  亨: %s  利: %s  貞: %s</mark> (획) </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> 자원오행: </td>
+            <td> 사주구성과 오행을 분석한 결과 </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> <mark>%s, %s</mark> 기운을 가진 글자가 </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> 사주구성의 부족한 부분을 보완하여 도움이 된다.  </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> 선택한 <u>%s(%s) %s(%s)</u>의 기운으로 도움을 준다.  </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td> 불용한자: </td>
+            <td> 없음 </td>
+            <td> </td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<div class="bs-callout bs-callout-warning">
+</div>
+""" % (hangul[0], hangul[1], hangul[2],
+       hanja[0], hanja[1], name_hanja[1], hanja[2], name_hanja[2],
+       saju['year'], saju['month'], saju['day'], saju['siju'][1],
+       saju['lun_year'], saju['lun_month'], saju['lun_day'],
        saju['siju'][0], saju['iljin'][0], saju['wolgeon'][0], saju['secha'][0],
        saju['siju'][1], saju['iljin'][1], saju['wolgeon'][1], saju['secha'][1],
        saju['siju_type'][0], saju['iljin_type'][0], saju['wolgeon_type'][0], saju['secha_type'][0],
@@ -911,7 +1026,7 @@ def main():
     # DBG TEST data
     birth = get_random_birth()  # '200103010310'  # '200203011201'
     ln = get_one_last_name()
-    gender = MALE
+    gender = FEMALE
 
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
@@ -930,9 +1045,8 @@ def main():
         # names = array_remove_duplicates(name_dict)
 
     choose = RandomDict(name_dict)
-    new_name_info = create_result_message(conn, saju,
-                                          choose.random_item()[0],
-                                          choose.random_item()[1])
+    r_name = choose.random_item()
+    new_name_info = create_result_message(conn, saju, r_name[0], r_name[1])
 
     print(new_name_info)
     print(ln, birth, gender)
