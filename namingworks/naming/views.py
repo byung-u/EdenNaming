@@ -40,3 +40,9 @@ def naming_result(request):
     return render(request, 'naming_result.html', {
         'title': _('NamingResult'),
     })
+
+
+def naming_result_detail(request):
+    return render(request, 'naming_result_detail.html', {
+        'title': _('NamingResult'),
+    })
