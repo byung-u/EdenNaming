@@ -59,7 +59,7 @@ def get_new_korean_name(gender, location, last_name, birth_datetime):
     l = get_lastname(last_name)
     print(l)
     print(birth)
-    result_name = get_name(birth, l)
+    result_name = get_name(birth, l, gender)
     print(result_name)
     print('---------------------')
     return result_name
