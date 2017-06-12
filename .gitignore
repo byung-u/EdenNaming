@@ -92,6 +92,9 @@ ENV/
 migrations/
 __pycache__/
 static/
+bak/
+test/
 *.pyc
 *.bak
 *.sqlite3
+tags
