@@ -24,7 +24,6 @@ def naming(request):
 
             birth_datetime = '%s %s' % (birth_date, birth_time)
             names = get_new_korean_name(gender, location, last_name, birth_datetime)
-            print(names)
 
         return render(request, 'naming_result.html', {
             'names': names,
@@ -38,11 +37,5 @@ def naming(request):
 
 def naming_result(request):
     return render(request, 'naming_result.html', {
-        'title': _('NamingResult'),
-    })
-
-
-def naming_result_detail(request):
-    return render(request, 'naming_result_detail.html', {
         'title': _('NamingResult'),
     })
