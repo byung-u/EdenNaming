@@ -41,6 +41,7 @@ def login(request):
     })
 
 
+@never_cache
 def login_req(request, token):
     time_threshold = datetime.now() - timedelta(hours=1)
     try:
