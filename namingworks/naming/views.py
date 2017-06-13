@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext as _
 from django.shortcuts import render
 
-from .forms import NamingForm
-from .naming import get_new_korean_name
+from .forms import NamingForm, Suri81Form
+from .naming import get_new_korean_name, get_hanja_name
 
 
 def naming(request):
@@ -37,5 +37,44 @@ def naming(request):
 
 def naming_result(request):
     return render(request, 'naming_result.html', {
-        'title': _('NamingResult'),
+        'title': _('작명결과'),
+    })
+
+
+def suri81(request):
+    form = Suri81Form()
+
+    if request.method == 'POST':
+        form = Suri81Form(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            hanja1, hanja2, hanja3 = get_hanja_name(name)
+
+        return render(request, 'suri81_trying.html', {
+            'hanja1': hanja1,
+            'hanja2': hanja2,
+            'hanja3': hanja3,
+        })
+
+    return render(request, 'suri81_input.html', {
+        'form': form,
+        'title': _('Suri81'),
+    })
+
+def suri81_result(request):
+
+    if request.method == 'POST':
+        hanja1 = form.cleaned_data['hanja1']
+        hanja2 = form.cleaned_data['hanja2']
+        hanja3 = form.cleaned_data['hanja3']
+        print(hanja1, hanja2, hanja3)
+
+        return render(request, 'suri81_result.html', {
+            'hanja1': hanja1,
+            'hanja2': hanja2,
+            'hanja3': hanja3,
+        })
+
+    return render(request, 'index.html', {
+        'title': _('Suri81'),
     })
