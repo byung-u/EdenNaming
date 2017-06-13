@@ -11,14 +11,13 @@
 {% block content %}
 
 <div class="container">
-    <div class="row row-offcanvas row-offcanvas-right">
-        <div class="jumbotron">
-            <div class="bs-callout bs-callout-warning">
-                <h2>작명 결과</h2>
-            </div>
+    <div class="jumbotron">
+        <h2>작명 결과</h2>
+        <div class="bs-callout bs-callout-warning">
             {{ names|safe}}
-            <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-large btn-primary">HOME 화면으로</a>
+            <center><font face="궁서" size="5"> 上記와 같이 姓名學에 의거하여 작명함</font><img src="{% static "image/stamp.png" %}" alt="MIRAI NAMING" height="100" width="100"></center>
         </div>
+        <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-large btn-primary">HOME 화면으로</a>
     </div>
 </div>
 {% endblock %}
