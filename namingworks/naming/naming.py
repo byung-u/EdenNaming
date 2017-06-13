@@ -63,3 +63,35 @@ def get_new_korean_name(gender, location, last_name, birth_datetime):
     print(result_name)
     print('---------------------')
     return result_name
+
+def get_hanja_name(name):
+    hanja1 = []
+    hanja2 = []
+    hanja3 = []
+    conn = sqlite3.connect('naming_korean.db')
+    c = conn.cursor()
+    # query = 'select chinese_char from naming_baby where id=5624'
+
+    query = 'SELECT hanja,pronunciations FROM hanja where reading="%s"' % name[0]
+    for row in c.execute(query):
+        hanja = row[0]
+        pronounce = row[1]
+        hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
+        hanja1.append(hanja)
+
+    query = 'SELECT hanja,pronunciations FROM hanja where reading="%s"' % name[1]
+    for row in c.execute(query):
+        hanja = row[0]
+        pronounce = row[1]
+        hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
+        hanja2.append(hanja)
+
+    query = 'SELECT hanja,pronunciations FROM hanja where reading="%s"' % name[2]
+    for row in c.execute(query):
+        hanja = row[0]
+        pronounce = row[1]
+        hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
+        hanja3.append(hanja)
+
+
+    return hanja1, hanja2, hanja3
