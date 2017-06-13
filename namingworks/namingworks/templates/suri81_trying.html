@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block nav %}
+{% include "nav.html" %}
+<div class="container theme-showcase" role="main">
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+        <h2>입력 받은 이름</h2> <br>
+        {{ name }}
+    </div>
+</div> <!-- /container -->
+{% endblock %}
+
+
+{% block wrap %}
+<div class="row wrap">
+    <div class="col-md-12 content">
+        {{ base_content | safe }}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
