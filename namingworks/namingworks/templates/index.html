@@ -13,9 +13,10 @@
 
         <div class="col-12 col-md-9">
             <div class="jumbotron">
-                <h2>미래작명당</h2>
-                <p>성명학에 따라 이름을 지어보세요.</p>
-                <p>베타 기간 중에는 무료로 사용하실 수 있습니다.</p>
+                <h2>작명, 이름운세</h2> <br>
+                <p>아이의 이름을 지어보시거나 <br>
+                본인 이름의 수리 운세를 확인해보세요. <br>
+                로그인 후에 사용할 수 있습니다.</p>
             </div>
             {% if user.is_authenticated %}
             <div class="row">
@@ -24,8 +25,6 @@
                     <p><a class="btn btn-secondary" href="{% url "naming" %}" role="button">작명할 아이 정보 입력하기 &raquo;</a></p>
                 </div><!--/span-->
             </div><!--class-->
-            {% else %}
-            {% endif %}
             <div class="row">
                 <div class="col-6 col-lg-4">
                     <h2>이름 운세 확인하기</h2>
@@ -33,14 +32,8 @@
                     <p><a class="btn btn-secondary" href="{% url "suri81" %}" role="button">한자 이름 입력하기 &raquo;</a></p>
                 </div><!--/span-->
             </div><!--/row-->
-        </div><!--/span-->
-
-        <div class="col-6 col-md-3 sidebar-offcanvas" id="sidebar">
-            <div class="list-group">
-                <a href="#" class="list-group-item active">Link</a>
-                <a href="#" class="list-group-item">Link</a>
-                <a href="#" class="list-group-item">Link</a>
-            </div>
+            {% else %}
+            {% endif %}
         </div><!--/span-->
     </div><!--/row-->
 
