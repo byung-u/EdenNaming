@@ -20,7 +20,7 @@ from django.contrib.flatpages import views
 
 from .views import index
 from home.views import login, login_mailsent, login_req, logout, profile
-from naming.views import naming, naming_result
+from naming.views import naming, naming_result, suri81, suri81_result
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -34,8 +34,10 @@ urlpatterns = [
 
     url(r'^profile/$', profile, name='profile'),
 
-    url(r'^naming/$', naming, name='naming'),
-    url(r'^naming/naming_result$', naming_result, name='naming_result'),
+    url(r'^service/naming/$', naming, name='naming'),
+    url(r'^service/suri81/$', suri81, name='suri81'),
+    url(r'^service/naming_result$', naming_result, name='naming_result'),
+    url(r'^service/suri81_result/$', suri81_result, name='suri81_result'),
 
     # flatpages
     url(r'^pages/', include('django.contrib.flatpages.urls')),
