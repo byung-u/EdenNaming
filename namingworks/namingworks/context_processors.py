@@ -19,12 +19,9 @@ def default(request):
     menu = OrderedDict([
         ('about', {
             'title': _('이용안내'),
-            'icon': 'info-sign',
+            'icon': 'pencil',
             'submenu': OrderedDict([
-                ('naming', {'title': _('미래작명당')}),
-                ('staff', {'title': _('Staff')}),
-                ('contact', {'title': _('Contact')}),
-                ('test', {'title': _('test')}),
+                ('naming', {'title': _('미래작명당 소개')}),
             ]),
         }),
         ('naming', {
@@ -41,10 +38,10 @@ def default(request):
             ]),
         }),
         ('service', {
-            'title': _('서비스'),
-            'icon': 'thumbs-up',
+            'title': _('고객센터'),
+            'icon': 'question-sign',
             'submenu': OrderedDict([
-                ('naming', {'title': _('작명')}),
+                ('qna', {'title': _('온라인문의')}),
                 ('suri81', {'title': _('이름운세(수리성명)')}),
             ]),
         }),
