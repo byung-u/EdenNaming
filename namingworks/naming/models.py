@@ -17,5 +17,9 @@ class NamingUserInput(models.Model):
     birth_time = models.TimeField(default=timezone.now)
     #birth_datetime = models.DateTimeField(input_formats=['%Y-%m-%d %H:%M'])
 
+
+class Suri81UserInput(models.Model):
+    name = models.CharField(max_length=8)
+
     def __str__(self):
         return self.name
