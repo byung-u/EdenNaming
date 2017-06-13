@@ -44,8 +44,8 @@ def insert_explanation(conn):  # http://yxeta.tistory.com/29
                     continue
                 strokes = re.split(r"(\d+)", info[0])[1]
             else:
-                explain = line.rstrip()
-                insert_numeric_info(strokes, explain, conn)
+                explain = line.strip().split('.')
+                insert_numeric_info(strokes, explain[0], conn)
                 strokes, explain = None, None
     f.closed
 
