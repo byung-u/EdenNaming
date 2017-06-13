@@ -21,12 +21,7 @@ def default(request):
             'title': _('이용안내'),
             'icon': 'info-sign',
             'submenu': OrderedDict([
-                ('pyconkr', {'title': _('About PyCon Korea 2017')}),
-                ('coc', {'title': _('Code of Conduct')}),
-                ('announcements', {'title': _('Announcements')}),
-                ('sponsor', {'title': _('Sponsors')}),
-                ('patron', {'title': _('Patrons')}),
-                ('sponsorship', {'title': _('Sponsorship')}),
+                ('naming', {'title': _('미래작명당')}),
                 ('staff', {'title': _('Staff')}),
                 ('contact', {'title': _('Contact')}),
                 ('test', {'title': _('test')}),
@@ -50,7 +45,7 @@ def default(request):
             'icon': 'thumbs-up',
             'submenu': OrderedDict([
                 ('naming', {'title': _('작명')}),
-                ('name_luck', {'title': _('이름운세')}),
+                ('suri81', {'title': _('이름운세(수리성명)')}),
             ]),
         }),
     ])
