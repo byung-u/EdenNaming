@@ -31,7 +31,7 @@ Naming Works
 - 일반 단어 제외 목록
   - [국립국어원](http://www.korean.go.kr/front/etcData/etcDataView.do?mn_id=46&etc_seq=71)
   - [영어단어 13000 다운로드](https://doc-0c-9s-docs.googleusercontent.com/docs/securesc/tec3bh8hdd1rjv0g5vd8td6522dcvi0k/skbq5ftun284uu34e9crd9gri3cupioc/1496210400000/11093551788895655914/14549008824345722584/0B4O_EqeoWv_EYWtQWXdOVW5ORGs?e=download&nonce=eed9hrem67510&user=14549008824345722584&hash=aj8che5ps7lc6o8rc4pfutotvfeucu8k)
-
+- [Unicode 한글](http://jjeong.tistory.com/696)
 
 VIM command
 -----------
