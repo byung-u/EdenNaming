@@ -9,8 +9,23 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
         <h2>입력 받은 이름</h2> <br>
-        {{ name }}
+        <h4>성</h4> <br>
+        {% for hanja in hanja1 %}
+        <input name="hanja1" type="radio" value={{ hanja.0 }}>
+        <label>{{ hanja}} </label> <br>
+        {% endfor %}
+        <h4>이름 (가운데)</h4> <br>
+        {% for hanja in hanja2 %}
+        <input name="hanja2" type="radio" value={{ hanja.0 }}>
+        <label>{{ hanja}} </label> <br>
+        {% endfor %}
+        <h4>이름 (끝)</h4> <br>
+        {% for hanja in hanja3 %}
+        <input name="hanja3" type="radio" value={{ hanja.0 }}>
+        <label>{{ hanja}} </label> <br>
+        {% endfor %}
     </div>
+    <a href="{% url "suri81_result" %}" style='float:right; clear:right;' class="btn btn-large btn-primary"> 화면으로</a>
 </div> <!-- /container -->
 {% endblock %}
 
