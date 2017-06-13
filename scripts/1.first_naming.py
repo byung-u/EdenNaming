@@ -35,7 +35,9 @@ def create_naming_hanja_table():
     "radical" char(1) NULL,
     "radical_info" varchar(128) NULL,
     "five_type" char(1) NULL,
-    "rsc_type" char(1) NULL)''')
+    "rsc_type" char(1) NULL,
+    "pronunciations" varchar(32) NULL)
+    ''')
     conn.commit()
 
     return conn
