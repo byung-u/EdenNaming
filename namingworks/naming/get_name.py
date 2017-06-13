@@ -781,6 +781,20 @@ def get_rsc_type(conn, hanja):
     return rsc_type
 
 
+def get_suri_detail(conn, sum_suri):
+
+    s = conn.cursor()
+    query = 'SELECT level FROM naming_81 WHERE strokes=%d and reference="yxeta"' % sum_suri
+    s.execute(query)
+    level = s.fetchone()
+    query = 'SELECT explain FROM naming_81_explanation WHERE strokes=%d' % sum_suri
+    s.execute(query)
+    explain = s.fetchone()
+
+    detail = '%s %s' % (level[0], explain[0])
+    return detail
+
+
 def get_suri_hanja(conn, hanja):
     suri_81 = []
     s = conn.cursor()
@@ -804,22 +818,34 @@ def get_suri_hanja(conn, hanja):
             suri_81.append(int(strokes[0]) + int(strokes[1]))
 
     if len(suri_81) == 3:
-        suri_81.append(suri_81[0] + suri_81[1])
-        suri_81.append(suri_81[1] + suri_81[2])
-        suri_81.append(suri_81[2] + suri_81[0])
-        suri_81.append(suri_81[0] + suri_81[1] + suri_81[2])
+        sum_suri = suri_81[0] + suri_81[1]
+        suri_81.append(sum_suri)
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        sum_suri = suri_81[1] + suri_81[2]
+        suri_81.append(sum_suri)
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        sum_suri = suri_81[2] + suri_81[0]
+        suri_81.append(sum_suri)
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        sum_suri = suri_81[0] + suri_81[1] + suri_81[2]
+        suri_81.append(sum_suri)
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
         if suri_81[0] % 2 == 0:
-            suri_81[0] = '음'
+            suri_81[0] = '陰'
         else:
-            suri_81[0] = '양'
+            suri_81[0] = '陽'
         if suri_81[1] % 2 == 0:
-            suri_81[1] = '음'
+            suri_81[1] = '陰'
         else:
-            suri_81[1] = '양'
+            suri_81[1] = '陽'
         if suri_81[2] % 2 == 0:
-            suri_81[2] = '음'
+            suri_81[2] = '陰'
         else:
-            suri_81[2] = '양'
+            suri_81[2] = '陽'
     return suri_81
 
 
@@ -865,32 +891,32 @@ def get_name_hanja(conn, hanja):
 
 def create_result_message(conn, saju, hanja, hangul):
     name_hanja = get_name_hanja(conn, hanja)
-    suri_hangul = get_suri_hangul(hangul)
+    # suri_hangul = get_suri_hangul(hangul)
     suri_hanja = get_suri_hanja(conn, hanja)
     rsc_type = get_rsc_type(conn, hanja)
-            
+
     new_name = """
-<table class="table table-condensed">
+    <table class="table table-condensed" style="font-size: 15px;">
     <thead>
-        <th>성명: </th>
-        <th> <strong style="font-size: 20px;"> %s %s %s </strong></th>
+        <th style="width:90px"> 성명: </th>
+        <th class="col-md-12"> <strong style="font-size: 30px;"> %s %s %s </strong></th>
     </thead>
     <tbody>
         <tr>
             <td>  </td>
-            <td> <strong style="font-size: 15px;"> %s %s<small>%s</small> %s<small>%s</small></strong></td>
+            <td> <strong style="font-size: 30px;"> %s %s<small>%s</small> %s<small>%s</small></strong></td>
         </tr>
         <tr>
             <td>  </td>
             <td>  </td>
         </tr>
         <tr>
-            <td> 양력: </td>
-            <td>  %s년% 02s월 %02s일 %s시 </td>
+            <td> 날짜: </td>
+            <td>  %s년% 02s월 %02s일 %s시 [양력]</td>
         </tr>
         <tr>
-            <td> 음력: </td>
-            <td> %s년% 02s월 %02s일 </td>
+            <td> </td>
+            <td>  %s년% 02s월 %02s일 [음력]</td>
         </tr>
         <tr>
             <td> </td>
@@ -909,32 +935,16 @@ def create_result_message(conn, saju, hanja, hangul):
             <td> <strong>%s %s %s %s </strong> </td>
         </tr>
         <tr>
-            <td> </td>
+            <td> 五行 </td>
             <td> %s %s %s %s </td>
         </tr>
         <tr>
             <td> </td>
             <td> %s %s %s %s </td>
-        </tr>
-        <tr>
-            <td> 수리음양: </td>
-            <td> <mark>%s%s%s</mark> 조화를 이룬다. </td>
-        </tr>
-        <tr>
-            <td> 발음오행: </td>
-            <td> <mark>%s%s%s</mark> 조화를 이룬다.  </td>
-        </tr>
-        <tr>
-            <td> 수리사격: </td>
-            <td> 모두 좋은 작용의 吉격 수리로 구성되어있다. </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> <mark> 元: %s  亨: %s  利: %s  貞: %s</mark> (획) </td>
         </tr>
         <tr>
             <td> 자원오행: </td>
-            <td> 사주구성과 오행을 분석한 결과 </td>
+            <td> 사주구성과 오행을 분석한 결과 <mark>%s</mark> 기운이 강하여 </td>
         </tr>
         <tr>
             <td> </td>
@@ -942,11 +952,35 @@ def create_result_message(conn, saju, hanja, hangul):
         </tr>
         <tr>
             <td> </td>
-            <td> 사주구성의 부족한 부분을 보완하여 도움이 된다.  </td>
+            <td> 사주구성의 부족한 부분을 보완하여 도움이 됩니다.  </td>
         </tr>
         <tr>
             <td> </td>
-            <td> 선택한 <u>%s(%s) %s(%s)</u>의 기운으로 도움을 준다.  </td>
+            <td> 선택한 <u>%s(%s) %s(%s)</u>의 기운으로 도움을 줍니다.  </td>
+        </tr>
+        <tr>
+            <td> 획수음양: </td>
+            <td> <mark>%s%s%s</mark> 음양이 고루섞여서 吉합니다.</td>
+        </tr>
+        <tr>
+            <td> 수리사격: </td>
+            <td> 원형이정 모두 좋은 작용의 吉격 수리로 구성되어있습니다. </td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> 元<small>(초년운), %s 획<br> %s </small></td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> 亨<small>(중년운), %s 획<br> %s </small></td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> 利<small>(장년운), %s 획<br> %s </small></td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td> 貞<small>(말년운), %s 획<br> %s </small></td>
         </tr>
         <tr>
             <td> 불용한자: </td>
@@ -967,11 +1001,14 @@ def create_result_message(conn, saju, hanja, hangul):
        saju['siju'][1], saju['iljin'][1], saju['wolgeon'][1], saju['secha'][1],
        saju['siju_type'][0], saju['iljin_type'][0], saju['wolgeon_type'][0], saju['secha_type'][0],
        saju['siju_type'][1], saju['iljin_type'][1], saju['wolgeon_type'][1], saju['secha_type'][1],
+       saju['strong'], saju['c1'], saju['c2'],
+       hanja[1], rsc_type[0], hanja[2], rsc_type[1],
        suri_hanja[0], suri_hanja[1], suri_hanja[2],
-       suri_hangul[0], suri_hangul[1], suri_hangul[2],
-       suri_hanja[3], suri_hanja[4], suri_hanja[5], suri_hanja[6],
-       saju['c1'], saju['c2'],
-       hanja[1], rsc_type[0], hanja[2], rsc_type[1])
+       suri_hanja[3], suri_hanja[4],
+       suri_hanja[5], suri_hanja[6],
+       suri_hanja[7], suri_hanja[8],
+       suri_hanja[9], suri_hanja[10],
+       )
 
     print(hanja, hangul)
     return new_name
@@ -979,6 +1016,10 @@ def create_result_message(conn, saju, hanja, hangul):
 
 def get_name(birth, ln, gender):
     conn = sqlite3.connect('naming_korean.db')
+
+    if len(ln) != 1:  # last name
+        error_message = "죄송합니다. <br>현재는 1글자 성씨만 지원합니다.<br>"
+        return error_message
 
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
