@@ -149,16 +149,48 @@ def get_hangul_list():
                 hanguls.append(h)
     return hanguls
 
+def insert_hanja_info_finish(conn):
+    c = conn.cursor()
+    with open('uniq_result') as f:
+        cnt = 0
+        for line in f:
+            l = line.split(',')
+            hanja = l[0].replace('\'', '').replace('\ ', '').strip()
+            for ll in l[1:]:
+                pronunciations = ll.replace('\'', '').replace('\ ', '').strip()
+                query = """
+                INSERT INTO hanja VALUES (NULL, "%s", "%s", "%s")""" % (
+                        hanja, pronunciations[-1], pronunciations)
+                c.execute(query)
+        conn.commit()
+
 
 def main():
     conn = create_hanja_table()
 
-    hanguls = get_hangul_list()
-    # print(hanguls)
-    # print(len(hanguls))
-    get_hanja(conn, hanguls)
+    # hanguls = get_hangul_list()
+    # get_hanja(conn, hanguls)
 
+    insert_hanja_info_finish(conn)
     conn.close()  # sqlite3 close
+
+    # 후처리 수동
+    # SELECT로 hanja,pronunciations 정보를 가져와서 가공한 후에
+    # 파일을 읽어서 음/뜻이 중복되는 것들을 걸러낸다.
+    # uniq 명령어로 안 된다.
+    # python의 dict를 사용
+    # fw = open('dump3', 'w')
+    # temp = {}
+    # with open('dump2') as f:
+    #     for line in f:
+    #         l = line.split('-')
+    #         if len(l) != 2:
+    #             print(l)
+    #         temp.update({l[1].replace('\'', '').replace('\ ', '').strip(): l[0].replace('\'', '').replace('\ ', '').strip()})
+
+    # for key, value in temp.items():
+    #     res = '%s, %s\n' % (value, key)
+    #     fw.write(res)
 
 
 if __name__ == '__main__':
