@@ -1,0 +1,118 @@
+* {
+    font-family: 'Open Sans', 'Helvetica Neue', 'Apple SD Gothic Neo', 'Nanum Gothic', 'Arial', 'Apple Gothic', sans-serif;
+    font-weight: 400;
+    line-height: 172%;
+
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+
+    /* anti-aliasing for firefox */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* anti-aliasing for general */
+    text-rendering: geometricPrecision;
+
+    -webkit-transition: background 0.2s;
+    -moz-transition: background 0.2s;
+    -o-transition: background 0.2s;
+    transition: background 0.2s;
+}
+
+/* table */
+.table { 
+    border: 1px solid #ebebeb; 
+}
+
+.table thead > tr > th {
+    border-bottom: none;
+}
+
+.table thead > tr > th,
+.table tbody > tr > th,
+.table tfoot > tr > th,
+.table thead > tr > td,
+.table tbody > tr > td,
+.table tfoot > tr > td {
+    border: 1px solid #ebebeb; 
+}
+
+/* jumbotron */
+.jumbotron h1, li{
+    color: #ffffff;
+}
+
+/* navbar */
+.nav.navbar-nav.navbar-right li a {
+    color: white;
+    font-weight: bold;
+}
+
+.navbar-nav > li > .dropdown-menu {
+    background-color: #2F4F4F;
+}
+
+/* callout */
+.bs-callout {
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #eee;
+    border-left-width: 5px;
+    border-radius: 3px;
+}
+
+*.bs-callout:empty {
+   padding: 20px;
+   margin: 0px;
+   border: none;   
+}
+
+
+.bs-callout h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+.bs-callout p:last-child {
+    margin-bottom: 0;
+}
+.bs-callout code {
+    border-radius: 3px;
+}
+.bs-callout+.bs-callout {
+    margin-top: -5px;
+}
+.bs-callout-default {
+    border-left-color: #777;
+}
+.bs-callout-default h4 {
+    color: #777;
+}
+.bs-callout-primary {
+    border-left-color: #428bca;
+}
+.bs-callout-primary h4 {
+    color: #428bca;
+}
+.bs-callout-success {
+    border-left-color: #5cb85c;
+}
+.bs-callout-success h4 {
+    color: #5cb85c;
+}
+.bs-callout-danger {
+    border-left-color: #d9534f;
+}
+.bs-callout-danger h4 {
+    color: #d9534f;
+}
+.bs-callout-warning {
+    border-left-color: #f0ad4e;
+}
+.bs-callout-warning h4 {
+    color: #f0ad4e;
+}
+.bs-callout-info {
+    border-left-color: #5bc0de;
+}
+.bs-callout-info h4 {
+    color: #5bc0de;
+}
