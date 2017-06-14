@@ -15,6 +15,13 @@ def naming(request):
     if request.method == 'POST':
         form = NamingForm(request.POST)
         if form.is_valid():
+#            if user_limit_check(request.user) is False:
+#                return render(request, 'naming_limit.html', {
+#                    'title': _('작명정보입력'),
+#                    'names': names,
+#                    'flag': flag,
+#                })
+
             location = form.cleaned_data['location']
             last_name = form.cleaned_data['last_name']
             gender = form.cleaned_data['gender']
@@ -23,15 +30,17 @@ def naming(request):
             birth_time = form.cleaned_data['birth_time']
 
             birth_datetime = '%s %s' % (birth_date, birth_time)
-            names = get_new_korean_name(gender, location, last_name, birth_datetime)
+            names, flag = get_new_korean_name(gender, location, last_name, birth_datetime)
 
         return render(request, 'naming_result.html', {
+            'title': _('작명정보입력'),
             'names': names,
+            'flag': flag,
         })
     else:
         return render(request, 'naming_input.html', {
+            'title': _('작명정보입력'),
             'form': form,
-            'title': _('NamingInput'),
         })
 
 
@@ -57,8 +66,8 @@ def suri81(request):
         })
 
     return render(request, 'suri81_input.html', {
+        'title': _('이름 운세'),
         'form': form,
-        'title': _('Suri81'),
     })
 
 def suri81_result(request):
@@ -76,5 +85,5 @@ def suri81_result(request):
         })
 
     return render(request, 'index.html', {
-        'title': _('Suri81'),
+        'title': _('미래작명당'),
     })
