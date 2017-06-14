@@ -57,7 +57,7 @@ class NamingForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit(
-            'submit', _('제출'), css_class='btn-success', 
+            'submit', _('요청하기'), css_class='btn-success',
             style='float:right; clear: right;',
             ))
 
