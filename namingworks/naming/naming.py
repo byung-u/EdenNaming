@@ -44,13 +44,13 @@ def get_lastname(info):
 
 
 def get_new_korean_name(gender, location, last_name, birth_datetime):
-    print('---------------------')
+    # print('---------------------')
     # print(location)
     # print(gender)
     # print(birth_order)
     # print(birth_datetime)
     # print(last_name)
-    print('---------------------')
+    # print('---------------------')
     # get_location(location)
     # get_gender(gender)
     # get_birth_order(birth_order)
@@ -59,10 +59,10 @@ def get_new_korean_name(gender, location, last_name, birth_datetime):
     l = get_lastname(last_name)
     print(l)
     print(birth)
-    result_name = get_name(birth, l, gender)
+    result_name, flag = get_name(birth, l, gender)
     print(result_name)
-    print('---------------------')
-    return result_name
+    # print('---------------------')
+    return result_name, flag
 
 def get_hanja_name(name):
     hanja1 = []
