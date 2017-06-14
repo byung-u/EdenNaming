@@ -8,14 +8,15 @@
 {% endwith %}
 
 {% block content %}
-<div class="container">
-    <div class="row row-offcanvas row-offcanvas-right">
-        <div class="jumbotron">
-            <h3>LOGIN FAILED</h3>
+<div class="jumbotron">
+    <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+            <br>
+            <h1>로그인이 실패하였습니다.</h1>
             <div class="alert alert-info" role="alert">
-                <h5>INVALID TOKEN</h5>
+                <h5>토큰이 더이상 유효하지 않기때문에 다시 로그인 해주시기 바랍니다.</h5>
             </div>
-            <a href="{% url "index" %}" class="btn btn-large btn-primary">Home으로</a>
+            <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-primary">첫 화면으로</a>
         </div>
     </div>
 </div>
