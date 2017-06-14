@@ -1,0 +1,27 @@
+
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% block nav %}
+{% with navbar_class="navbar-translucent" %}
+{% include "nav.html" %}
+{% endwith %}
+
+{% block content %}
+<div class="jumbotron">
+    <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+            <br>
+            <h1>최대 무료 사용 횟수 초과입니다.</h1>
+            <div class="alert alert-info" role="alert">
+                <p>이메일 계정 1개당 10회 무료사용이 가능합니다.<br>
+                <p>무제한 사용을 원하시는 경우 <strong>고객센터</strong>의 <mark>온라인 문의</mark>를 통해서 문의해주시기 바랍니다.
+                </p>
+            </div>
+            <a href="{% url "index" %}" class="btn btn-large btn-primary">Home으로</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% endblock %} 

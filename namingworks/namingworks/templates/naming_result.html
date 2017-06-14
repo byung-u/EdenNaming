@@ -16,11 +16,11 @@
         <div class="bs-callout bs-callout-warning">
             {{ names|safe}}
             {% if flag %}
-            <center><img src="{% static "image/stamp.png" %}" walt="MIRAI NAMING" height="100" width="300"></center>
+            <!-- <center><img src="{% static "image/naming_result.png" %}" height="100" width="300"></center> -->
             {% else %}
             {% endif %}
         </div>
-        <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-large btn-primary">HOME 화면으로</a>
+        <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-primary">첫 화면으로</a>
     </div>
 </div>
 {% endblock %}
