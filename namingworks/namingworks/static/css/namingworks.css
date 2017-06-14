@@ -37,19 +37,40 @@
 }
 
 /* jumbotron */
-.jumbotron h1, li{
+/* h1 색상 */
+/*.jumbotron h1{
     color: #ffffff;
-}
+}*/
 
 /* navbar */
+/* navbar의 글씨 관련 */
 .nav.navbar-nav.navbar-right li a {
     color: white;
     font-weight: bold;
 }
 
+/* 드랍다운 메뉴의 뒷 배경 색상 */
 .navbar-nav > li > .dropdown-menu {
     background-color: #2F4F4F;
 }
+
+/* navbar에 마우스 포인터가 올라가면 색상 변경 */
+.nav > li > a:hover{
+    background-color:#FF0000;
+}
+
+/* navbar에 마우스 포인터가 올라가면 색상 변경 */
+.navbar .brand, .navbar .nav > li > a:hover {
+    color: #ADD8E6;
+}
+/* 클릭한 후 드랍다운 메뉴의 색상 변경 */
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+    background-image:none !important;
+}
+
+ .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+     background-color: #408787;
+ }
 
 /* callout */
 .bs-callout {
