@@ -898,20 +898,20 @@ def create_result_message(conn, saju, hanja, hangul):
     new_name = """
     <table class="table table-condensed" style="font-size: 15px;">
     <thead>
-        <th style="width:90px"> 성명: </th>
-        <th class="col-md-12"> <strong style="font-size: 30px;"> %s %s %s </strong></th>
+        <th class="col-md-4""> 성명 </th>
+        <th class="col-md-12"> <strong style="font-size: 30px;"> %s %s %s (%s %s %s)</strong></th>
     </thead>
-    <tbody>
+    <tbody style='height:5px;'>
         <tr>
             <td>  </td>
-            <td> <strong style="font-size: 30px;"> %s %s<small>%s</small> %s<small>%s</small></strong></td>
+            <td> <mark>%s/ %s</mark></td>
         </tr>
         <tr>
             <td>  </td>
             <td>  </td>
         </tr>
         <tr>
-            <td> 날짜: </td>
+            <td> 날짜 </td>
             <td>  %s년% 02s월 %02s일 %s시 [양력]</td>
         </tr>
         <tr>
@@ -943,7 +943,7 @@ def create_result_message(conn, saju, hanja, hangul):
             <td> %s %s %s %s </td>
         </tr>
         <tr>
-            <td> 자원오행: </td>
+            <td> 자원오행 </td>
             <td> 사주구성과 오행을 분석한 결과 <mark>%s</mark> 기운이 강하여 </td>
         </tr>
         <tr>
@@ -959,12 +959,12 @@ def create_result_message(conn, saju, hanja, hangul):
             <td> 선택한 <u>%s(%s) %s(%s)</u>의 기운으로 도움을 줍니다.  </td>
         </tr>
         <tr>
-            <td> 획수음양: </td>
+            <td> 획수음양 </td>
             <td> <mark>%s%s%s</mark> 음양이 고루섞여서 吉합니다.</td>
         </tr>
         <tr>
-            <td> 수리사격: </td>
-            <td> 원형이정 모두 좋은 작용의 吉격 수리로 구성되어있습니다. </td>
+            <td> 수리사격 </td>
+            <td> 원형이정 <mark>모두 吉격 수리</mark>로 좋은 작용을 하도록 구성되었습니다. </td>
         </tr>
         <tr>
             <td> </td>
@@ -983,18 +983,15 @@ def create_result_message(conn, saju, hanja, hangul):
             <td> 貞<small>(말년운), %s 획<br> %s </small></td>
         </tr>
         <tr>
-            <td> 불용한자: </td>
+            <td> 불용한자 </td>
             <td> 없음 </td>
         </tr>
     </tbody>
 </table>
 </div>
 """ % (hangul[0], hangul[1], hangul[2],
-       hanja[0],
-       hanja[1],
-       name_hanja[1],
-       hanja[2],
-       name_hanja[2],
+       hanja[0], hanja[1], hanja[2],
+       name_hanja[1], name_hanja[2],
        saju['year'], saju['month'], saju['day'], saju['siju'][1],
        saju['lun_year'], saju['lun_month'], saju['lun_day'],
        saju['siju'][0], saju['iljin'][0], saju['wolgeon'][0], saju['secha'][0],
@@ -1019,17 +1016,19 @@ def get_name(birth, ln, gender):
 
     if len(ln) != 1:  # last name
         error_message = "죄송합니다. <br>현재는 1글자 성씨만 지원합니다.<br>"
-        return error_message
+        return error_message, False
 
     n1 = get_last_name_info(conn, ln)
     if n1 is None:
-        return
+        error_message = "죄송합니다. <br>내부 서버에 문제가 있습니다.<br>"
+        return error_message, False
 
     # SAJU
     saju = get_saju(conn, birth)
     if saju is None:
         print('[ERR] get saju failed')
-        return
+        error_message = "죄송합니다. <br>내부 서버에 문제가 있습니다.<br>"
+        return error_message, False
 
     name_dict, cnt = get_names(conn, n1, saju, gender, NORMAL)
     if len(name_dict) < 3:
@@ -1043,4 +1042,4 @@ def get_name(birth, ln, gender):
     new_name_info = create_result_message(conn, saju, r_name[0], r_name[1])
 
     conn.close()  # db close
-    return new_name_info
+    return new_name_info, True
