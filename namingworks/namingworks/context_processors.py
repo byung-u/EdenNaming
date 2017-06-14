@@ -28,21 +28,17 @@ def default(request):
             'title': _('성명학'),
             'icon': 'book',
             'submenu': OrderedDict([
-                ('pronounce', {'title': _('음령오행')}),
-                ('three_type', {'title': _('삼원오행')}),
-                ('resource_type', {'title': _('자원오행')}),
-                ('suri', {'title': _('수리음양')}),
-                ('numeric_sum', {'title': _('원형이정')}),
-                ('invalid_hanja', {'title': _('불용한자')}),
-                ('saju', {'title': _('주역괘효')}),
+                ('theory', {'title': _('성명학 이론')}),
+                ('rules', {'title': _('작명법의 종류')}),
+                ('destiny', {'title': _('사주구성 및 보충오행')}),
+                ('pillars', {'title': _('수리와 오행')}),
             ]),
         }),
-        ('service', {
+        ('client', {
             'title': _('고객센터'),
             'icon': 'question-sign',
             'submenu': OrderedDict([
-                ('qna', {'title': _('온라인문의')}),
-                ('suri81', {'title': _('이름운세(수리성명)')}),
+                ('contact', {'title': _('온라인문의')}),
             ]),
         }),
     ])
