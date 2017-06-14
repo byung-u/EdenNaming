@@ -19,7 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.flatpages import views
 
 from .views import index
-from home.views import login, login_mailsent, login_req, logout, profile
+from home.views import login, login_mailsent, login_req, logout, contact
 from naming.views import naming, naming_result, suri81, suri81_result
 
 urlpatterns = [
@@ -32,12 +32,12 @@ urlpatterns = [
     url(r'^login/req/(?P<token>[a-z0-9\-]+)$', login_req, name='login_req'),
     url(r'^logout/$', logout, name='logout'),
 
-    url(r'^profile/$', profile, name='profile'),
-
     url(r'^service/naming/$', naming, name='naming'),
     url(r'^service/suri81/$', suri81, name='suri81'),
     url(r'^service/naming_result$', naming_result, name='naming_result'),
     url(r'^service/suri81_result/$', suri81_result, name='suri81_result'),
+
+    url(r'^client/contact/$', contact, name='contact'),
 
     # flatpages
     url(r'^pages/', include('django.contrib.flatpages.urls')),
