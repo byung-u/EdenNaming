@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block nav %}
+{% include "nav.html" %}
+
+<div class="jumbotron">
+    <div class="container theme-showcase" role="main">
+        {% block content %}
+        <h1>Contact</h1>
+        <form role="form" action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
+        {% endblock %}
+
+    </div> <!-- /container -->
+</div> <!-- /container -->
+{% endblock %}
