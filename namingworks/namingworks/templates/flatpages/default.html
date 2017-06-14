@@ -5,9 +5,10 @@
 {% with navbar_class="navbar-translucent" %}
 {% include "nav.html" %}
 {% endwith %}
+<div class="jumbotron">
+<div class="bs-callout bs-callout-success">
+    {{ flatpage.content }}
+</div>
+</div>
 
-
-{% block content %}
-{{ flatpage.content }}
-{% endblock %}
 {% endblock %}
