@@ -27,3 +27,17 @@ class EmailLoginForm(forms.Form):
     def clean(self):
         cleaned_data = super(EmailLoginForm, self).clean()
         return cleaned_data
+
+class EmailSendForm(forms.Form):
+    name = forms.CharField(required=True)
+    email = forms.EmailField(required=True)
+    content = forms.CharField(
+            required=True,
+            widget=forms.Textarea
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(EmailSendForm, self).__init__(*args, **kwargs)
+        self.fields['name'].label = "Your name:"
+        self.fields['email'].label = "Your email:"
+        self.fields['content'].label = "What do you want to say?"

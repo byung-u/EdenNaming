@@ -4,14 +4,17 @@ from __future__ import unicode_literals
 from django.contrib.auth import login as user_login, logout as user_logout
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMessage
 from django.shortcuts import render, redirect, reverse
+from django.template import Context
+from django.template.loader import get_template
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 
 from datetime import datetime, timedelta
 
 from .models import EmailToken
-from .forms import EmailLoginForm
+from .forms import EmailLoginForm, EmailSendForm
 from .helper import sendEmailToken
 
 
@@ -86,3 +89,43 @@ def logout(request):
 
 def profile(request):
     return redirect(reverse('index'))
+
+
+def contact(request):
+    form_class = EmailSendForm()
+
+    if request.method == 'POST':
+        form = form_class(data=request.POST)
+
+        if form.is_valid():
+            contact_name = request.POST.get(
+                'contact_name'
+            , '')
+            contact_email = request.POST.get(
+                'contact_email'
+            , '')
+            form_content = request.POST.get('content', '')
+
+            # Email the profile with the contact information
+            template = get_template('contact_template.html')
+            context = Context({
+                'contact_name': contact_name,
+                'contact_email': contact_email,
+                'form_content': form_content,
+            })
+            content = template.render(context)
+
+            email = EmailMessage(
+                "New contact form submission",
+                content,
+                "Your website" +'',
+                ['youremail@gmail.com'],
+                headers = {'Reply-To': contact_email }
+            )
+            email.send()
+            return redirect('contact')
+
+    return render(request, 'contact.html', {
+        'form': form_class,
+    })
+
