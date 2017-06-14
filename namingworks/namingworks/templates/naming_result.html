@@ -15,7 +15,10 @@
         <h2>작명 결과</h2>
         <div class="bs-callout bs-callout-warning">
             {{ names|safe}}
-            <center><img src="{% static "image/stamp.png" %}" alt="MIRAI NAMING" height="100" width="100"></center>
+            {% if flag %}
+            <center><img src="{% static "image/stamp.png" %}" walt="MIRAI NAMING" height="100" width="300"></center>
+            {% else %}
+            {% endif %}
         </div>
         <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-large btn-primary">HOME 화면으로</a>
     </div>

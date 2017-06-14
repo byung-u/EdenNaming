@@ -7,41 +7,46 @@
 {% include "nav.html" %}
 {% endwith %}
 
+<!--<div class="container"> -->
+
+<div style="background:#27292b" class="jumbotron">
+    <div class="container">
+        <br>
+        <br>
+        <h1>미래작명당</h1>
+        <li>작명서비스로 아이의 앞날에 축복을 더할 이름을 지어보세요.</li>
+        <li>이름운세서비스로 현재 이름의 운세를 확인해보세요.</li>
+        <br>
+        {% if user.is_authenticated %}
+        {% else %}
+        <p><a class="btn btn-primary" href="{% url "login" %}" role="button"><span class="glyphicon glyphicon-user"></span>로그인 </a></p>
+        {% endif %}
+    </div>
+</div>
 <div class="container">
-
-    <div class="row row-offcanvas row-offcanvas-right">
-
-        <div class="col-12 col-md-9">
-            <div class="jumbotron">
-                <h2>작명, 이름운세</h2> <br>
-                <p>아이의 이름을 지어보시거나 <br>
-                본인 이름의 수리 운세를 확인해보세요. <br>
-                로그인 후에 사용할 수 있습니다.</p>
-            </div>
-            {% if user.is_authenticated %}
-            <div class="row">
-                <div class="col-6 col-lg-4">
-                    <h2>작명하기</h2>
-                    <p><a class="btn btn-secondary" href="{% url "naming" %}" role="button">작명할 아이 정보 입력하기 &raquo;</a></p>
-                </div><!--/span-->
-            </div><!--class-->
-            <div class="row">
-                <div class="col-6 col-lg-4">
-                    <h2>이름 운세 확인하기</h2>
-                    <li>한자획수를 바탕으로 81수리 원형이정을 확인합니다.</li>
-                    <p><a class="btn btn-secondary" href="{% url "suri81" %}" role="button">한자 이름 입력하기 &raquo;</a></p>
-                </div><!--/span-->
-            </div><!--/row-->
-            {% else %}
-            {% endif %}
+    {% if user.is_authenticated %}
+    <div class="row">
+        <div class="col-6 col-lg-4">
+            <h2>작명하기</h2>
+            <p>탄생 정보 및 성씨 정보를 바탕으로 吉한 이름을 지어줍니다.</p>
+            <p><a class="btn btn-secondary" href="{% url "naming" %}" role="button">아이 정보 입력하기 &raquo;</a></p>
+        </div><!--/span-->
+    </div><!--class-->
+    <div class="row">
+        <div class="col-6 col-lg-4">
+            <h2>이름 운세 확인하기</h2>
+            <p>한자획수를 바탕으로 운세를 확인합니다.</p>
+            <p><a class="btn btn-secondary" href="{% url "suri81" %}" role="button">이름 입력하기 &raquo;</a></p>
         </div><!--/span-->
     </div><!--/row-->
+    {% else %}
+    {% endif %}
 
     <hr>
 
     <footer>
         <p>Copyright &copy; Namingworks 2017</p>
     </footer>
+</div> <!--/.container-->
 
-</div><!--/.container-->
 {% endblock %}
