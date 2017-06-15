@@ -6,17 +6,24 @@
 {% block nav %}
 {% include "nav.html" %}
 
-<div class="jumbotron">
-    <div class="container theme-showcase" role="main">
-        {% block content %}
-        <h1>Contact</h1>
-        <form role="form" action="" method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Submit</button>
-        </form>
-        {% endblock %}
-
-    </div> <!-- /container -->
+<div class="jumbotron jumbotron-billboard">
+    <div class="img"></div>
+    <h1>이메일 문의</h1>
+    <p>문의사항이 있으시면 메일로 문의주세요. <br>
+    빠른시일 안으로 회신드리겠습니다. </p>
 </div> <!-- /container -->
+
+<div class="jumbotron jumbotron-white">
+<div class="container">
+    <div class="row row-offcanvas row-offcanvas-right">
+        <div class="col-xs-12 col-sm-9">
+            <div class="row">
+                {% block content %}
+                {% crispy form %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 {% endblock %}
