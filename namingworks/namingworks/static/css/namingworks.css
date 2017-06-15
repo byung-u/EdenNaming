@@ -21,6 +21,8 @@
 /* table */
 .table { 
     border: 1px solid #ebebeb; 
+    table-layout: fixed;
+    word-wrap: break-word;
 }
 
 .table thead > tr > th {
@@ -37,40 +39,51 @@
 }
 
 /* jumbotron */
-/* h1 색상 */
-/*.jumbotron h1{
-    color: #ffffff;
-}*/
+.jumbotron-naming {
+    background-color: #FFFFFF;
+}
+.jumbotron-billboard .img {
+    margin-bottom: 0px;
+    opacity: 0.2;
+    color: #fff;
+    background: #000 url("../image/jumbotron_billboard_back.png") center center;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    overflow: hidden;
+
+
+    position:absolute;
+    top:0;left:0;
+    z-index:1;
+}
+.jumbotron {position:relative;padding:50px;}
+.jumbotron .container {z-index:2;
+    position:relative;
+    z-index:2;
+}
+
+
 
 /* navbar */
-/* navbar의 글씨 관련 */
-.nav.navbar-nav.navbar-right li a {
-    color: white;
-    font-weight: bold;
-}
+nav.navbar-findcond { background: #fff; border-color: #ccc; box-shadow: 0 0 2px 0 #ccc; }
+nav.navbar-findcond a { color: #330099; }
+nav.navbar-findcond ul.navbar-nav a { color: #330099; border-style: solid; border-width: 0 0 2px 0; border-color: #fff; }
+nav.navbar-findcond ul.navbar-nav a:hover,
+nav.navbar-findcond ul.navbar-nav a:visited,
+nav.navbar-findcond ul.navbar-nav a:focus,
+nav.navbar-findcond ul.navbar-nav a:active { background: #fff; }
+nav.navbar-findcond ul.navbar-nav a:hover { border-color: #330099; }
+nav.navbar-findcond li.divider { background: #ccc; }
+nav.navbar-findcond button.navbar-toggle { background: #330099; border-radius: 2px; }
+nav.navbar-findcond button.navbar-toggle:hover { background: #999; }
+nav.navbar-findcond button.navbar-toggle > span.icon-bar { background: #fff; }
+nav.navbar-findcond ul.dropdown-menu { border: 0; background: #fff; border-radius: 4px; margin: 4px 0; box-shadow: 0 0 4px 0 #ccc; }
+nav.navbar-findcond ul.dropdown-menu > li > a { color: #444; }
+nav.navbar-findcond ul.dropdown-menu > li > a:hover { background: #330099; color: #fff; }
+nav.navbar-findcond span.badge { background: #330099; font-weight: normal; font-size: 11px; margin: 0 4px; }
+nav.navbar-findcond span.badge.new { background: rgba(255, 0, 0, 0.8); color: #fff; }
 
-/* 드랍다운 메뉴의 뒷 배경 색상 */
-.navbar-nav > li > .dropdown-menu {
-    background-color: #2F4F4F;
-}
-
-/* navbar에 마우스 포인터가 올라가면 색상 변경 */
-.nav > li > a:hover{
-    background-color:#FF0000;
-}
-
-/* navbar에 마우스 포인터가 올라가면 색상 변경 */
-.navbar .brand, .navbar .nav > li > a:hover {
-    color: #ADD8E6;
-}
-/* 클릭한 후 드랍다운 메뉴의 색상 변경 */
-.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
-    background-image:none !important;
-}
-
- .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
-     background-color: #408787;
- }
 
 /* callout */
 .bs-callout {
