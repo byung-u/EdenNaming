@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sqlite3
-
-from time import time
 from random import randrange
-from randomdict import RandomDict
 
 # /usr/local/lib/python3.6/site-packages/hangul_utils
 from hangul_utils import hangul_len, split_syllable_char
 from .block_list import BLOCK_LIST
 from .words_list import WORDS_LIST
 from .use_name_list import (MALE_MIDDLE_DICT, FEMALE_MIDDLE_DICT,
-                           MALE_LAST_DICT, FEMALE_LAST_DICT,
-                           MALE_NAME_DICT, FEMALE_NAME_DICT,)
+                            MALE_LAST_DICT, FEMALE_LAST_DICT,
+                            MALE_NAME_DICT, FEMALE_NAME_DICT,)
 
 NORMAL = 0
 IGNORE = 1
@@ -30,7 +27,10 @@ PRONUNCIATIONS = 5
 
 def get_last_name_info(conn, hanja):
     s = conn.cursor()
-    query = 'SELECT hanja,reading,strokes,add_strokes,rsc_type FROM last_name where hanja="%s"' % hanja
+    query = '''
+    SELECT hanja,reading,strokes,add_strokes,rsc_type
+    FROM last_name where hanja="%s"
+    ''' % hanja
     s.execute(query)
     row = s.fetchone()
     if row is None:
@@ -795,6 +795,21 @@ def get_suri_detail(conn, sum_suri):
     return detail
 
 
+def get_luck_type(conn, total_strokes):
+    s = conn.cursor()
+    query = 'SELECT luck_type FROM naming_81 WHERE strokes=%d AND reference="yxeta"' % total_strokes
+    s.execute(query)
+    row = s.fetchone()
+    if row is None:
+        print('SELECT luck_type failed, strokes=', total_strokes)
+        return None
+    luck_type = row[0]
+    if luck_type == '凶':
+        luck_type = '半吉'
+
+    return luck_type
+
+
 def get_suri_hanja(conn, hanja):
     suri_81 = []
     s = conn.cursor()
@@ -810,28 +825,35 @@ def get_suri_hanja(conn, hanja):
             print('get_suri_hanja SELECT failed, hanja=', hanja)
             if last_row is None:
                 return None
-
-        strokes = list(row)
-        if strokes[1] is None:
-            suri_81.append(int(strokes[0]))
+            strokes = list(last_row)
         else:
-            suri_81.append(int(strokes[0]) + int(strokes[1]))
+            strokes = list(row)
 
-    if len(suri_81) == 3:
+        if strokes[1] is None:
+            total_strokes = int(strokes[0])
+        else:
+            total_strokes = int(strokes[0]) + int(strokes[1])
+        suri_81.append(total_strokes)
+
+    if len(suri_81) == 3:  # TODO: 현재 3글자 이름만 지원함
         sum_suri = suri_81[0] + suri_81[1]
         suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
         suri_81.append(get_suri_detail(conn, sum_suri))
 
         sum_suri = suri_81[1] + suri_81[2]
         suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
         suri_81.append(get_suri_detail(conn, sum_suri))
 
         sum_suri = suri_81[2] + suri_81[0]
         suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
         suri_81.append(get_suri_detail(conn, sum_suri))
 
         sum_suri = suri_81[0] + suri_81[1] + suri_81[2]
         suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
         suri_81.append(get_suri_detail(conn, sum_suri))
 
         if suri_81[0] % 2 == 0:
@@ -870,10 +892,12 @@ def get_suri_hangul(hangul):
         suri_pn.append('양')
     return suri_pn
 
+
 def get_name_hanja(conn, hanja):
     hanja_info = []
     s = conn.cursor()
     for i in range(len(hanja)):
+        get_hanja = ""
         query = 'SELECT pronunciations FROM naming_hanja where hanja="%s"' % hanja[i]
         s.execute(query)
         row = s.fetchone()
@@ -882,81 +906,47 @@ def get_name_hanja(conn, hanja):
             query = 'SELECT pronunciations FROM last_name where hanja="%s"' % hanja[i]
             last_s.execute(query)
             last_row = last_s.fetchone()
-            print('get_suri_hanja SELECT failed, hanja=', hanja)
             if last_row is None:
+                print('get_suri_hanja SELECT failed, hanja=', hanja)
                 return None
-        hanja_info.append(row[0])
+            get_hanja = last_row[0].split(',')[0]
+        else:
+            get_hanja = row[0].split(',')[0]
+
+        hanja_info.append(get_hanja)
     return hanja_info
 
 
 def create_result_message(conn, saju, hanja, hangul):
     name_hanja = get_name_hanja(conn, hanja)
-    # suri_hangul = get_suri_hangul(hangul)
     suri_hanja = get_suri_hanja(conn, hanja)
+    if suri_hanja is None:
+        return None
     rsc_type = get_rsc_type(conn, hanja)
 
+    # <table class="table table-condensed" style="font-size: 15px;">
     new_name = """
-    <table class="table table-condensed" style="font-size: 15px;">
+    <table class="table">
     <thead>
-        <th class="col-md-4""> 성명 </th>
-        <th class="col-md-12"> <strong style="font-size: 30px;"> %s %s %s (%s %s %s)</strong></th>
+        <th class="col-md-4"> 성명 </th>
+        <th class="col-md-12"> <strong style="font-size: 30px;"> %s %s %s (%s %s</strong><mark>%s</mark> <strong style="font-size: 30px;"> %s</strong> <mark>%s</mark>)</th>
     </thead>
     <tbody style='height:5px;'>
         <tr>
-            <td>  </td>
-            <td> <mark>%s/ %s</mark></td>
-        </tr>
-        <tr>
-            <td>  </td>
-            <td>  </td>
-        </tr>
-        <tr>
             <td> 날짜 </td>
-            <td>  %s년% 02s월 %02s일 %s시 [양력]</td>
+            <td>  %s년% 02s월 %02s일 %s시 [양력]<br> %s년% 02s월 %02s일 [음력]</td>
         </tr>
         <tr>
-            <td> </td>
-            <td>  %s년% 02s월 %02s일 [음력]</td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> </td>
-        </tr>
-        <tr>
-            <td> 四柱 </td>
-            <td> 時 日 月 年 </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> <strong>%s %s %s %s </strong> </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> <strong>%s %s %s %s </strong> </td>
-        </tr>
-        <tr>
-            <td> 五行 </td>
-            <td> %s %s %s %s </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> %s %s %s %s </td>
+            <td> 사주오행 </td>
+            <td> 時 日 月 年 <br>
+            <strong>%s %s %s %s </strong> <br>
+            <strong>%s %s %s %s </strong> <br>
+             %s %s %s %s <br>
+             %s %s %s %s </td>
         </tr>
         <tr>
             <td> 자원오행 </td>
-            <td> 사주구성과 오행을 분석한 결과 <mark>%s</mark> 기운이 강하여 </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> <mark>%s, %s</mark> 기운을 가진 글자가 </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> 사주구성의 부족한 부분을 보완하여 도움이 됩니다.  </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> 선택한 <u>%s(%s) %s(%s)</u>의 기운으로 도움을 줍니다.  </td>
+            <td> 사주구성과 오행을 분석한 결과 <mark>%s</mark> 기운이 강하여 <mark>%s, %s</mark> 기운을 가진 글자가 사주구성의 부족한 부분을 보완하여 도움이 됩니다.  선택한 <u>%s(%s) %s(%s)</u>의 기운으로 도움을 줍니다.  </td>
         </tr>
         <tr>
             <td> 획수음양 </td>
@@ -964,23 +954,10 @@ def create_result_message(conn, saju, hanja, hangul):
         </tr>
         <tr>
             <td> 수리사격 </td>
-            <td> 원형이정 <mark>모두 吉격 수리</mark>로 좋은 작용을 하도록 구성되었습니다. </td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> 元<small>(초년운), %s 획<br> %s </small></td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> 亨<small>(중년운), %s 획<br> %s </small></td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> 利<small>(장년운), %s 획<br> %s </small></td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td> 貞<small>(말년운), %s 획<br> %s </small></td>
+            <td> 元<small>(초년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+             亨<small>(중년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+             利<small>(장년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+             貞<small>(말년운), %s 획 <mark>%s</mark><br> - %s </small></td>
         </tr>
         <tr>
             <td> 불용한자 </td>
@@ -990,8 +967,11 @@ def create_result_message(conn, saju, hanja, hangul):
 </table>
 </div>
 """ % (hangul[0], hangul[1], hangul[2],
-       hanja[0], hanja[1], hanja[2],
-       name_hanja[1], name_hanja[2],
+       hanja[0],
+       hanja[1],
+       name_hanja[1],
+       hanja[2],
+       name_hanja[2],
        saju['year'], saju['month'], saju['day'], saju['siju'][1],
        saju['lun_year'], saju['lun_month'], saju['lun_day'],
        saju['siju'][0], saju['iljin'][0], saju['wolgeon'][0], saju['secha'][0],
@@ -1001,14 +981,25 @@ def create_result_message(conn, saju, hanja, hangul):
        saju['strong'], saju['c1'], saju['c2'],
        hanja[1], rsc_type[0], hanja[2], rsc_type[1],
        suri_hanja[0], suri_hanja[1], suri_hanja[2],
-       suri_hanja[3], suri_hanja[4],
-       suri_hanja[5], suri_hanja[6],
-       suri_hanja[7], suri_hanja[8],
-       suri_hanja[9], suri_hanja[10],
+       suri_hanja[3], suri_hanja[4], suri_hanja[5],
+       suri_hanja[6], suri_hanja[7], suri_hanja[8],
+       suri_hanja[9], suri_hanja[10], suri_hanja[11],
+       suri_hanja[12], suri_hanja[13], suri_hanja[14],
        )
 
     print(hanja, hangul)
     return new_name
+
+
+def get_randum_new_name(name_dict):
+    rd = randrange(len(name_dict) - 1)
+    hanja, hangul = None, None
+    for idx, i in enumerate(name_dict):
+        if idx == rd:
+            hanja = i
+            hangul = name_dict[i]
+            return hanja, hangul
+    return None, None
 
 
 def get_name(birth, ln, gender):
@@ -1031,15 +1022,22 @@ def get_name(birth, ln, gender):
         return error_message, False
 
     name_dict, cnt = get_names(conn, n1, saju, gender, NORMAL)
-    if len(name_dict) < 3:
+    if len(name_dict) < 1:
         print('Names not found')
         name_dict, cnt = get_names(conn, n1, saju, gender, IGNORE)
-        print(name_dict)
-        # names = array_remove_duplicates(name_dict)
 
-    choose = RandomDict(name_dict)
-    r_name = choose.random_item()
-    new_name_info = create_result_message(conn, saju, r_name[0], r_name[1])
+    print(name_dict)
+    hanja, hangul = get_randum_new_name(name_dict)
+    if hanja is None or hangul is None:
+        print('[ERR] no result', ln, birth)
+        error_message = "죄송합니다. <br>내부 서버에 문제가 있습니다.<br>"
+        return error_message, False
+
+    new_name_info = create_result_message(conn, saju, hanja, hangul)
+    if new_name_info is None:
+        print('[ERR] create_result_message failed', ln, birth)
+        error_message = "죄송합니다. <br>내부 서버에 문제가 있습니다.<br>"
+        return error_message, False
 
     conn.close()  # db close
     return new_name_info, True
