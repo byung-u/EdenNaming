@@ -20,7 +20,7 @@ from .helper import sendEmailToken
 
 def login(request):
     if request.user.is_authenticated():
-        return redirect('profile')
+        return redirect('index')
 
     form = EmailLoginForm()
 
