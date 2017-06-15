@@ -6,6 +6,6 @@ from django.utils.translation import ugettext as _
 
 def index(request):
     return render(request, 'index.html', {
-        'title': _('미래작명당'),
+        'title': _('이든작명연구소'),
         'index': True,
     })
