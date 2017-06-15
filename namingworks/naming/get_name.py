@@ -928,8 +928,8 @@ def create_result_message(conn, saju, hanja, hangul):
     new_name = """
     <table class="table">
     <thead>
-        <th class="col-md-4"> 성명 </th>
-        <th class="col-md-12"> <strong style="font-size: 30px;"> %s %s %s (%s %s</strong><mark>%s</mark> <strong style="font-size: 30px;"> %s</strong> <mark>%s</mark>)</th>
+        <th class="col-xs-2"> 성명 </th>
+        <th class="col-xs-10"> <strong style="font-size: 30px;"> %s %s %s (%s %s</strong><mark>%s</mark> <strong style="font-size: 30px;"> %s</strong> <mark>%s</mark>)</th>
     </thead>
     <tbody style='height:5px;'>
         <tr>
@@ -991,7 +991,7 @@ def create_result_message(conn, saju, hanja, hangul):
     return new_name
 
 
-def get_randum_new_name(name_dict):
+def get_random_new_name(name_dict):
     rd = randrange(len(name_dict) - 1)
     hanja, hangul = None, None
     for idx, i in enumerate(name_dict):
@@ -1026,12 +1026,13 @@ def get_name(birth, ln, gender):
         print('Names not found')
         name_dict, cnt = get_names(conn, n1, saju, gender, IGNORE)
 
-    print(name_dict)
-    hanja, hangul = get_randum_new_name(name_dict)
+    hanja, hangul = get_random_new_name(name_dict)
     if hanja is None or hangul is None:
         print('[ERR] no result', ln, birth)
         error_message = "죄송합니다. <br>내부 서버에 문제가 있습니다.<br>"
         return error_message, False
+    print(name_dict)
+    print(hanja, hangul)
 
     new_name_info = create_result_message(conn, saju, hanja, hangul)
     if new_name_info is None:
