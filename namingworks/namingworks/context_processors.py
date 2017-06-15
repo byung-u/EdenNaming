@@ -21,7 +21,7 @@ def default(request):
             'title': _('이용안내'),
             'icon': 'pencil',
             'submenu': OrderedDict([
-                ('naming', {'title': _('미래작명당 소개')}),
+                ('naming', {'title': _('이든작명연구소 소개')}),
             ]),
         }),
         ('naming', {
