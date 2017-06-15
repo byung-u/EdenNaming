@@ -10,16 +10,15 @@
 
 {% block content %}
 
-<div class="container">
-    <div class="jumbotron">
+<div class="jumbotron jumbotron-naming">
+    <div class="container">
         <h2>작명 결과</h2>
-        <div class="bs-callout bs-callout-warning">
-            {{ names|safe}}
-            {% if flag %}
-            <!-- <center><img src="{% static "image/naming_result.png" %}" height="100" width="300"></center> -->
-            {% else %}
-            {% endif %}
-        </div>
+        <hr>
+        {{ names|safe}}
+        {% if flag %}
+        <!-- <center><img src="{% static "image/naming_result.png" %}" height="100" width="300"></center> -->
+        {% else %}
+        {% endif %}
         <a href="{% url "index" %}" style='float:right; clear:right;' class="btn btn-primary">첫 화면으로</a>
     </div>
 </div>
