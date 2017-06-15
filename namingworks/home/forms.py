@@ -2,10 +2,13 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Submit, Layout, Field
+from crispy_forms.bootstrap import FormActions
 
 
 class EmailLoginForm(forms.Form):
@@ -29,15 +32,35 @@ class EmailLoginForm(forms.Form):
         return cleaned_data
 
 class EmailSendForm(forms.Form):
-    name = forms.CharField(required=True)
-    email = forms.EmailField(required=True)
+    email = forms.EmailField(
+            max_length=255,
+            label='',
+            widget=forms.TextInput(attrs={
+                'class': 'form-control',
+            })
+        )
     content = forms.CharField(
-            required=True,
-            widget=forms.Textarea
+                widget=forms.Textarea(),
             )
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+            Field('email', css_class='input-xlarge'),
+            Field('content', rows="5", css_class='input-xlarge'),
+            FormActions(
+                Submit('send_email', 'Send Email',
+                    style='float:right; clear: right;',
+                    css_class="btn-success"),
+            )
+    )
 
     def __init__(self, *args, **kwargs):
         super(EmailSendForm, self).__init__(*args, **kwargs)
-        self.fields['name'].label = "Your name:"
-        self.fields['email'].label = "Your email:"
-        self.fields['content'].label = "What do you want to say?"
+        self.fields['email'].label = "E-mail 주소:"
+        self.fields['content'].label = "내용:"
+
+    def validate(self, value):
+        super(EmailSendForm, self).validate(value)
+        for email in value:
+            validate_email(email)

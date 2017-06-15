@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 
 from .models import EmailToken
 from .forms import EmailLoginForm, EmailSendForm
-from .helper import sendEmailToken
+from .helper import sendEmailToken, sendEmailContact
 
 
 def login(request):
@@ -92,40 +92,19 @@ def profile(request):
 
 
 def contact(request):
-    form_class = EmailSendForm()
+    form = EmailSendForm()
 
     if request.method == 'POST':
-        form = form_class(data=request.POST)
+        form = EmailSendForm(request.POST)
 
         if form.is_valid():
-            contact_name = request.POST.get(
-                'contact_name'
-            , '')
-            contact_email = request.POST.get(
-                'contact_email'
-            , '')
-            form_content = request.POST.get('content', '')
+            from_email = request.POST.get( 'email')
+            content = request.POST.get('content')
 
-            # Email the profile with the contact information
-            template = get_template('contact_template.html')
-            context = Context({
-                'contact_name': contact_name,
-                'contact_email': contact_email,
-                'form_content': form_content,
-            })
-            content = template.render(context)
-
-            email = EmailMessage(
-                "New contact form submission",
-                content,
-                "Your website" +'',
-                ['youremail@gmail.com'],
-                headers = {'Reply-To': contact_email }
-            )
-            email.send()
-            return redirect('contact')
+            sendEmailContact(request, from_email, content)
+            return redirect('index')
 
     return render(request, 'contact.html', {
-        'form': form_class,
+        'form': form,
     })
 
