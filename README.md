@@ -1,7 +1,7 @@
-Naming Works
+Eden Naming
 ============
-- 이름 관련 분석 서비스
-  - 둘쨰아이 이름짓다가 작명법의 규칙들이 신경쓰여서 이를 편리하게 확인할 수 있도록 만드는중
+- 작명 서비스 제공
+- 개인 용도, 일부 정보는 비공개함
 
 작명
 --
@@ -37,3 +37,31 @@ VIM command
 -----------
 - ,(comma) to \n(newline)
 `:%s/,\ /\r/g`
+
+Release
+-------
+- 0.7.0 (current)
+  - Code refactoring
+  - Test
+
+- 0.6.0 (June, 16 Friday 2017)
+  - 기존 계획했던 기능 구현 완료
+  - 기본 test
+
+- 0.5.0 (June, 8 Thursday 2017)
+  - 서버에서 처리할 기본 구현 완료
+  - Django 메뉴 추가
+
+- 0.4.0 (June, 2 Friday 2017)
+  - Django를 이용하여 flatpage 구현 완료
+  - 작명 결과 이름 로직 전체 수정
+
+- 0.3.0 (May, 31 Wednesday 2017)
+  - Django를 이용하여 로그인, 및 기본 기능 구현 완료
+
+- 0.2.0 (May, 22 Monday 2017)
+  - 작명에 사용할 한자 정보 수집하여 DB세팅 완료
+
+- 0.1.0 (May, 15 Monday 2017)
+  - 작명 할 한자 정보 수집
+  - Django 자체 스터디
