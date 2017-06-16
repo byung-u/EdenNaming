@@ -4,10 +4,7 @@ from __future__ import unicode_literals
 from django.contrib.auth import login as user_login, logout as user_logout
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import EmailMessage
 from django.shortcuts import render, redirect, reverse
-from django.template import Context
-from django.template.loader import get_template
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 
@@ -98,7 +95,7 @@ def contact(request):
         form = EmailSendForm(request.POST)
 
         if form.is_valid():
-            from_email = request.POST.get( 'email')
+            from_email = request.POST.get('email')
             content = request.POST.get('content')
 
             sendEmailContact(request, from_email, content)
@@ -107,4 +104,3 @@ def contact(request):
     return render(request, 'contact.html', {
         'form': form,
     })
-
