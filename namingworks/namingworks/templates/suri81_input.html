@@ -5,12 +5,14 @@
 
 {% block nav %}
 {% include "nav.html" %}
-<div class="container theme-showcase" role="main">
-    <!-- Main jumbotron for a primary marketing message or call to action -->
-    <div class="jumbotron">
-        <h2>정보를 입력 해주세요.</h2> <br>
-        {% csrf_token %}
-        {% crispy form %}
+
+<div class="container">
+    <div class="jumbotron jumbotron-white">
+        <div class="container theme-showcase" role="main">
+            <h2>이름을 입력 해주세요.</h2> <br>
+            {% csrf_token %}
+            {% crispy form %}
+        </div> <!-- /container -->
     </div>
 </div> <!-- /container -->
 {% endblock %}
