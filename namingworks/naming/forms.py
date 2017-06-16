@@ -3,15 +3,11 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-# from django_summernote.widgets import SummernoteInplaceWidget
-
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Field
-from crispy_forms.bootstrap import InlineCheckboxes, InlineRadios
+from crispy_forms.layout import Submit
 
 from .models import NamingUserInput, Suri81UserInput
-from .choices import (GENDER_CHOICES, ORDER_CHOICES,
-                      LASTNAME_CHOICES, LOCATION_CHOICES)
+
 
 class NamingForm(forms.ModelForm):
 
@@ -57,9 +53,10 @@ class NamingForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit(
-            'submit', _('요청하기'), css_class='btn-success',
-            style='float:right; clear: right;',
+            'submit', _('요 청'), css_class='btn-success',
+            style='float:right; clear: right; margin-top: 10px;',
             ))
+
 
 class Suri81Form(forms.ModelForm):
 
@@ -82,6 +79,6 @@ class Suri81Form(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit(
-            'submit', _('제출'), css_class='btn-success', 
+            'submit', _('요 청'), css_class='btn-success',
             style='float:right; clear: right;',
             ))

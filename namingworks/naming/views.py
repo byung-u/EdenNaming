@@ -3,9 +3,11 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext as _
 from django.shortcuts import render
+from django.views.decorators.cache import never_cache
 
+# from .forms import NamingForm, Suri81Form, Suri81ResultForm
 from .forms import NamingForm, Suri81Form
-from .naming import get_new_korean_name, get_hanja_name
+from .naming import get_new_korean_name, get_hanja_name, get_your_luck
 
 
 def naming(request):
@@ -15,6 +17,7 @@ def naming(request):
     if request.method == 'POST':
         form = NamingForm(request.POST)
         if form.is_valid():
+            print(request.user)
 #            if user_limit_check(request.user) is False:
 #                return render(request, 'naming_limit.html', {
 #                    'title': _('작명정보입력'),
@@ -60,6 +63,7 @@ def suri81(request):
             hanja1, hanja2, hanja3 = get_hanja_name(name)
 
         return render(request, 'suri81_trying.html', {
+            'name': name,
             'hanja1': hanja1,
             'hanja2': hanja2,
             'hanja3': hanja3,
@@ -70,18 +74,24 @@ def suri81(request):
         'form': form,
     })
 
+
+@never_cache
 def suri81_result(request):
 
-    if request.method == 'POST':
-        hanja1 = form.cleaned_data['hanja1']
-        hanja2 = form.cleaned_data['hanja2']
-        hanja3 = form.cleaned_data['hanja3']
-        print(hanja1, hanja2, hanja3)
+    if request.method == 'GET':
+        # form = Suri81ResultForm(request.GET)
+        input_name = request.GET.get('input_name')
+        print('---------')
+        print(input_name)
+        print('---------')
+        hanja1 = request.GET.get('hanja1')
+        hanja2 = request.GET.get('hanja2')
+        hanja3 = request.GET.get('hanja3')
+        # print(hanja1, hanja2, hanja3)
+        your_luck = get_your_luck(input_name, hanja1, hanja2, hanja3)
 
         return render(request, 'suri81_result.html', {
-            'hanja1': hanja1,
-            'hanja2': hanja2,
-            'hanja3': hanja3,
+            'result': your_luck,
         })
 
     return render(request, 'index.html', {

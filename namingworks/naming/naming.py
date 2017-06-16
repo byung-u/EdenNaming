@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import sqlite3
 import re
 
-from .get_name import get_name
+from .get_name import get_name, get_suri_hanja
 
 
 def get_location(location_idx):
@@ -64,6 +64,7 @@ def get_new_korean_name(gender, location, last_name, birth_datetime):
     # print('---------------------')
     return result_name, flag
 
+
 def get_hanja_name(name):
     hanja1 = []
     hanja2 = []
@@ -72,26 +73,75 @@ def get_hanja_name(name):
     c = conn.cursor()
     # query = 'select chinese_char from naming_baby where id=5624'
 
-    query = 'SELECT hanja,pronunciations FROM hanja where reading="%s"' % name[0]
+    query = '''
+    SELECT naming_hanja.hanja, naming_hanja.pronunciations, naming_hanja.reading, last_name.hanja
+    FROM naming_hanja
+    INNER JOIN last_name ON naming_hanja.hanja = last_name.hanja
+    WHERE naming_hanja.reading = "%s"
+    ''' % name[0]
     for row in c.execute(query):
         hanja = row[0]
         pronounce = row[1]
         hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
         hanja1.append(hanja)
 
-    query = 'SELECT hanja,pronunciations FROM hanja where reading="%s"' % name[1]
+    query = '''
+    SELECT DISTINCT hanja,pronunciations
+    FROM naming_hanja
+    WHERE reading="%s" AND NOT pronunciations="|"
+    ORDER BY pronunciations''' % name[1]
     for row in c.execute(query):
         hanja = row[0]
         pronounce = row[1]
         hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
         hanja2.append(hanja)
 
-    query = 'SELECT hanja,pronunciations FROM hanja where reading="%s"' % name[2]
+    query = '''
+    SELECT DISTINCT hanja,pronunciations
+    FROM naming_hanja
+    WHERE reading="%s" AND NOT pronunciations="|"
+    ORDER BY pronunciations''' % name[2]
     for row in c.execute(query):
         hanja = row[0]
         pronounce = row[1]
         hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
         hanja3.append(hanja)
 
-
     return hanja1, hanja2, hanja3
+
+
+def get_your_luck(name, h1, h2, h3):
+    conn = sqlite3.connect('naming_korean.db')
+    hanja = '%s%s%s' % (h1, h2, h3)
+    suri_hanja = get_suri_hanja(conn, hanja)
+
+    your_luck = """
+    <table class="table">
+    <thead>
+        <th class="col-xs-2"> 성명 </th>
+        <th class="col-xs-10"> <strong style="font-size: 30px;">%s ( %s %s %s) </strong> </th>
+    </thead>
+    <tbody style='height:5px;'>
+        <tr>
+            <td> 획수음양 </td>
+            <td> <mark>%s%s%s</mark> 음양이 고루섞여서 吉합니다.</td>
+        </tr>
+        <tr>
+            <td> 수리사격 </td>
+            <td> 元<small>(초년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+             亨<small>(중년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+             利<small>(장년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+             貞<small>(말년운), %s 획 <mark>%s</mark><br> - %s </small></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+""" % (name, h1, h2, h3,
+       suri_hanja[0], suri_hanja[1], suri_hanja[2],
+       suri_hanja[3], suri_hanja[4], suri_hanja[5],
+       suri_hanja[6], suri_hanja[7], suri_hanja[8],
+       suri_hanja[9], suri_hanja[10], suri_hanja[11],
+       suri_hanja[12], suri_hanja[13], suri_hanja[14],
+       )
+
+    return your_luck
