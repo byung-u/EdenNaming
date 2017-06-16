@@ -33,8 +33,9 @@ urlpatterns = [
     url(r'^logout/$', logout, name='logout'),
 
     url(r'^service/naming/$', naming, name='naming'),
-    url(r'^service/suri81/$', suri81, name='suri81'),
     url(r'^service/naming_result$', naming_result, name='naming_result'),
+
+    url(r'^service/suri81/$', suri81, name='suri81'),
     url(r'^service/suri81_result/$', suri81_result, name='suri81_result'),
 
     url(r'^client/contact/$', contact, name='contact'),
