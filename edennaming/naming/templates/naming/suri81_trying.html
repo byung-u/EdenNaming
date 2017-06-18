@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block nav %}
+{% include "nav.html" %}
+
+<div class="container">
+    <div class="jumbotron jumbotron-white">
+        <div class="container theme-showcase" role="main">
+            <form action="{% url "suri81_result" %}" method="GET">
+                <table class="table">
+                    <h1>이름: <label>{{ name }} </label></h1> <br>
+                    <thead>
+                        <th class="col-xs-4"> 성 </th>
+                        <th class="col-xs-4"> 가운데 이름 </th>
+                        <th class="col-xs-4"> 마지막 이름 </th>
+                    </thead>
+                    <tbody>
+                        <td>
+                            {% for hanja in hanja1 %}
+                            <input name="hanja1" type="radio" value={{ hanja }}>
+                            <label>{{ hanja }} </label> <br> 
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for hanja in hanja2 %}
+                            <input name="hanja2" type="radio" value={{ hanja }}>
+                            <label>{{ hanja }} </label> <br>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for hanja in hanja3 %}
+                            <input name="hanja3" type="radio" value={{ hanja }}>
+                            <label>{{ hanja }} </label> <br>
+                            {% endfor %}
+                        </td>
+                    </tbody>
+                </table>
+                <input type="text" name="input_name" value={{ name }} style="display: none">
+                <input type="submit" value="Submit" style='float:right; clear:right;' class="btn btn-success">
+            </form>
+        </div>
+    </div>
+</div> <!-- /container -->
+{% endblock %}

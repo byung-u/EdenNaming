@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block nav %}
+{% with navbar_class="navbar-translucent" %}
+{% include "nav.html" %}
+{% endwith %}
+
+
+{% block content %}
+<div class="jumbotron">
+    <div class="row row-offcanvas row-offcanvas-right">
+        <div class="container">
+            <br>
+            <h2>이메일 주소를 입력해주세요.</h2>
+            <div class="alert alert-info" role="alert">
+                <p>고객 식별을 위한 이메일 정보만 사용합니다.</p>
+            </div>
+            {% csrf_token %}
+            {% crispy form %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% endblock %} 

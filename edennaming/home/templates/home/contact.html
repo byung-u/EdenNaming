@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block nav %}
+{% include "nav.html" %}
+
+<div class="jumbotron jumbotron-billboard">
+    <div class="img"></div>
+    <h1>이메일 문의</h1>
+    <p>문의사항이 있으시면 메일로 문의주세요. <br>
+    빠른시일 안으로 회신드리겠습니다. </p>
+</div> <!-- /container -->
+
+<div class="jumbotron jumbotron-white">
+<div class="container">
+    <div class="row row-offcanvas row-offcanvas-right">
+        <div class="col-xs-12 col-sm-9">
+            <div class="row">
+                {% block content %}
+                {% crispy form %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% load staticfiles %}
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+
+    <head>
+            <link href="{% static "components/bootstrap/dist/css/bootstrap.min.css" %}" rel="stylesheet">
+            <link href="{% static "components/bootstrap/dist/css/bootstrap-theme.min.css" %}" rel="stylesheet">
+            <link href="{% static "components/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
+            <link href="{% static "css/offcanvas.css" %}" rel="stylesheet">
+            <link href="{% static "css/jumbotron.css" %}" rel="stylesheet">
+            <link href="{% static "css/namingworks.css" %}" rel="stylesheet">
+
+            <!-- Google fonts -->
+            <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+            <link href='//fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+            <link href='//fonts.googleapis.com/earlyaccess/nanumgothic.css' rel='stylesheet' type='text/css'>
+
+            <!-- Favicon -->
+            <link rel="shortcut icon" href="{% static "image/favicon.ico" %}" type="image/x-icon">
+            <link rel="icon" href="{% static "image/favicon.ico" %}" type="image/x-icon">
+
+            <!-- Scripts -->
+            <!--[if lt IE 9]>
+                <script src="{% static "components/html5shiv/dist/html5shiv.min.js" %}"></script>
+                <script src="{% static "components/respond/dest/respond.min.js" %}"></script>
+            <![endif]-->
+            <!-- <script src="{% static "js/rgb-hsv.js" %}"></script> -->
+
+            <script src="{% static "components/jquery/dist/jquery.min.js" %}"></script>
+            <script src="{% static "components/bootstrap/dist/js/bootstrap.min.js" %}"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+            <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+            <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+            <!-- <script src="offcanvas.js"></script>-->
+        <title>{% block head-title %}{% trans "이든작명연구소" %}{% endblock %}</title>
+        <!-- <meta charset="UTF-8"> -->
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=0.85">
+
+        {% block head-include %}{% endblock %}
+
+    </head>
+
+    <body>
+        <!-- Fixed navbar -->
+        {% block nav %}{% include "nav.html" %}{% endblock %}
+
+
+        {% include "footer.html" %}
+    </body>
+
+</html>
