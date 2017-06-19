@@ -9,7 +9,13 @@
 <div class="container">
     <div class="jumbotron jumbotron-white">
         <div class="container theme-showcase" role="main">
+            {% if flag %}
             <h2>이름을 입력 해주세요.</h2> <br>
+            {% else %}
+            <font size="3" color="red"><b>{{ error_msg }}</b></font>
+            <h2>다시 이름을 입력 해주세요.</h2> <br>
+            {% endif %}
+
             {% csrf_token %}
             {% crispy form %}
         </div> <!-- /container -->
