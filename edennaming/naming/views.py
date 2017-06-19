@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import re
 
 from django.utils.translation import ugettext as _
 from django.shortcuts import render
@@ -53,6 +54,28 @@ def naming_result(request):
     })
 
 
+def input_name_check(input_name):
+    # TODO : 2, 4, 5 이름
+    if len(input_name) != 3:
+        return False, '현재 3글자 한글이름만 지원합니다. (%s)' % input_name
+
+    if input_name[0] == input_name[1] == input_name[2]:
+        err_msg = '세글자 모두 같습니다. (%s)' % input_name
+        return False, err_msg
+
+    r = re.compile('[A-z0-9]')
+    ret = r.search(input_name)
+    if ret is not None:
+        err_msg = '영어나 숫자는 처리 불가합니다. (%s)' % input_name
+        return False, err_msg
+
+    return True, None
+
+    # c = r1.search(input_name)
+
+    # r2 = re.compile('[^ ㄱ-ㅣ가-힣]+')
+
+
 def suri81(request):
     form = Suri81Form()
 
@@ -60,18 +83,28 @@ def suri81(request):
         form = Suri81Form(request.POST)
         if form.is_valid():
             name = form.cleaned_data['name']
+            ret, error_msg = input_name_check(name)
+            if ret is False:
+                return render(request, 'naming/suri81_input.html', {
+                    'title': _('이름 운세'),
+                    'form': form,
+                    'flag': False,
+                    'error_msg': error_msg,
+                })
             hanja1, hanja2, hanja3 = get_hanja_name(name)
 
-        return render(request, 'naming/suri81_trying.html', {
-            'name': name,
-            'hanja1': hanja1,
-            'hanja2': hanja2,
-            'hanja3': hanja3,
-        })
+            return render(request, 'naming/suri81_trying.html', {
+                'name': name,
+                'hanja1': hanja1,
+                'hanja2': hanja2,
+                'hanja3': hanja3,
+            })
 
     return render(request, 'naming/suri81_input.html', {
         'title': _('이름 운세'),
         'form': form,
+        'flag': True,
+        'error_msg': '',
     })
 
 
@@ -84,11 +117,23 @@ def suri81_result(request):
         print('---------')
         print(input_name)
         print('---------')
+
+        ret, err_msg = input_name_check(input_name)
+        if ret is None:
+            return render(request, 'naming/suri81_result.html', {
+                'result': err_msg,
+            })
+
         hanja1 = request.GET.get('hanja1')
         hanja2 = request.GET.get('hanja2')
         hanja3 = request.GET.get('hanja3')
         # print(hanja1, hanja2, hanja3)
         your_luck = get_your_luck(input_name, hanja1, hanja2, hanja3)
+        if your_luck is None:
+            print(input_name, hanja1, hanja2, hanja3)
+            return render(request, 'naming/suri81_result.html', {
+                'result': '내부 서버 에러입니다.',
+            })
 
         return render(request, 'naming/suri81_result.html', {
             'result': your_luck,
