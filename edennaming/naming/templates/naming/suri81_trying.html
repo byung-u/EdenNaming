@@ -6,6 +6,30 @@
 {% block nav %}
 {% include "nav.html" %}
 
+<button onclick="gotoBottom()" id="followBtn" title="Go to bottom">맨아래로</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("followBtn").style.display = "block";
+    } else {
+        document.getElementById("followBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function gotoBottom() {
+    var documentHeight=document.documentElement.offsetHeight;
+    var viewportHeight=window.innerHeight;
+    window.scrollTo(0,documentHeight-viewportHeight);
+    //document.body.scrollTop = 0;
+    //document.documentElement.scrollTop = 0;
+}
+</script>
+
 <div class="container">
     <div class="jumbotron jumbotron-white">
         <div class="container theme-showcase" role="main">
@@ -39,7 +63,7 @@
                     </tbody>
                 </table>
                 <input type="text" name="input_name" value={{ name }} style="display: none">
-                <input type="submit" value="Submit" style='float:right; clear:right;' class="btn btn-success">
+                <input type="submit" value="결과 요청하기 &raquo;" style="float:left;width:300px;" class="btn btn-success">
             </form>
         </div>
     </div>
