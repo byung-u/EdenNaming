@@ -81,7 +81,7 @@ def get_hanja_name(name):
     ''' % name[0]
     for row in c.execute(query):
         hanja = row[0]
-        pronounce = row[1]
+        pronounce = row[1].split(',')[0]
         hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
         hanja1.append(hanja)
 
@@ -92,7 +92,7 @@ def get_hanja_name(name):
     ORDER BY pronunciations''' % name[1]
     for row in c.execute(query):
         hanja = row[0]
-        pronounce = row[1]
+        pronounce = row[1].split(',')[0]
         hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
         hanja2.append(hanja)
 
@@ -103,7 +103,7 @@ def get_hanja_name(name):
     ORDER BY pronunciations''' % name[2]
     for row in c.execute(query):
         hanja = row[0]
-        pronounce = row[1]
+        pronounce = row[1].split(',')[0]
         hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
         hanja3.append(hanja)
 
@@ -114,6 +114,8 @@ def get_your_luck(name, h1, h2, h3):
     conn = sqlite3.connect('naming_korean.db')
     hanja = '%s%s%s' % (h1, h2, h3)
     suri_hanja = get_suri_hanja(conn, hanja)
+    if suri_hanja is None:
+        return None
 
     your_luck = """
     <table class="table">
