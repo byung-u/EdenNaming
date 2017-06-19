@@ -53,8 +53,8 @@ class NamingForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit(
-            'submit', _('요 청'), css_class='btn-success',
-            style='float:right; clear: right; margin-top: 10px;',
+            'submit', _('결과 요청하기'), css_class='btn-success bsbtn',
+            # style='float:center; clear: center;',
             ))
 
 
@@ -64,10 +64,11 @@ class Suri81Form(forms.ModelForm):
         model = Suri81UserInput
         fields = ['name', ]
         labels = {
-            'name': _('한글이름'),
+            'name': _('한글 이름'),
         }
         widgets = {
                 'name': forms.TextInput(attrs={
+                    'placeholder': '한글만 입력해주세요',
                     'style': 'width:150px; margin-left:100px',
                     'required': True,
                     'type': 'text',
@@ -79,6 +80,6 @@ class Suri81Form(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit(
-            'submit', _('요 청'), css_class='btn-success',
-            style='float:right; clear: right;',
+            'submit', _('결과 요청하기'), css_class='btn-success bsbtn',
+            # style='float:center; clear: center;',
             ))
