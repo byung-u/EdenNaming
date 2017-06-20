@@ -23,7 +23,7 @@ from naming.views import naming, naming_result, suri81, suri81_result
 
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', include(admin.site.urls)),
     url(r'^summernote/', include('django_summernote.urls')),
 ] + [
     # home
