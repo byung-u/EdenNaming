@@ -64,14 +64,51 @@ def get_new_korean_name(gender, location, last_name, birth_datetime):
     # print('---------------------')
     return result_name, flag
 
-
-def get_hanja_name(name):
+def get_4_length_name(c, name):
     hanja1 = []
     hanja2 = []
     hanja3 = []
+
+    query = 'SELECT hanja from last_name WHERE reading="%s"' % name[0:2]
+    row = c.fetchone()
+    if row is None:
+        return None, None, None
+    hanja1.append(row[0])
+
+    query = '''
+    SELECT DISTINCT hanja,pronunciations
+    FROM naming_hanja
+    WHERE reading="%s" AND NOT pronunciations="|"
+    ORDER BY pronunciations''' % name[2]
+    for row in c.execute(query):
+        hanja = row[0]
+        pronounce = row[1].split(',')[0]
+        hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
+        hanja2.append(hanja)
+
+    query = '''
+    SELECT DISTINCT hanja,pronunciations
+    FROM naming_hanja
+    WHERE reading="%s" AND NOT pronunciations="|"
+    ORDER BY pronunciations''' % name[3]
+    for row in c.execute(query):
+        hanja = row[0]
+        pronounce = row[1].split(',')[0]
+        hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
+        hanja3.append(hanja)
+
+    return hanja1, hanja2, hanja3
+
+
+def get_hanja_name(name):
     conn = sqlite3.connect('naming_korean.db')
     c = conn.cursor()
-    # query = 'select chinese_char from naming_baby where id=5624'
+    hanja1 = []
+    hanja2 = []
+    hanja3 = []
+
+    if len(name) == 4:
+        return get_4_length_name(c, name)
 
     query = '''
     SELECT naming_hanja.hanja, naming_hanja.pronunciations, naming_hanja.reading, last_name.hanja
@@ -96,54 +133,97 @@ def get_hanja_name(name):
         hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
         hanja2.append(hanja)
 
-    query = '''
-    SELECT DISTINCT hanja,pronunciations
-    FROM naming_hanja
-    WHERE reading="%s" AND NOT pronunciations="|"
-    ORDER BY pronunciations''' % name[2]
-    for row in c.execute(query):
-        hanja = row[0]
-        pronounce = row[1].split(',')[0]
-        hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
-        hanja3.append(hanja)
+    if len(name) > 2:
+        query = '''
+        SELECT DISTINCT hanja,pronunciations
+        FROM naming_hanja
+        WHERE reading="%s" AND NOT pronunciations="|"
+        ORDER BY pronunciations''' % name[2]
+        for row in c.execute(query):
+            hanja = row[0]
+            pronounce = row[1].split(',')[0]
+            hanja = '%s %s' % (hanja.replace('\'', ''), pronounce.replace('\'', ''))
+            hanja3.append(hanja)
 
     return hanja1, hanja2, hanja3
 
 
 def get_your_luck(name, h1, h2, h3):
     conn = sqlite3.connect('naming_korean.db')
-    hanja = '%s%s%s' % (h1, h2, h3)
+    if h3 is None:
+        hanja = '%s%s' % (h1, h2)
+    else:
+        hanja = '%s%s%s' % (h1, h2, h3)
+
     suri_hanja = get_suri_hanja(conn, hanja)
     if suri_hanja is None:
         return None
 
-    your_luck = """
-    <table class="table">
-    <thead>
-        <th class="col-xs-2"> 성명 </th>
-        <th class="col-xs-10"> <strong style="font-size: 30px;">%s ( %s %s %s) </strong> </th>
-    </thead>
-    <tbody style='height:5px;'>
-        <tr>
-            <td> 획수음양 </td>
-            <td> <mark>%s%s%s</mark> 음양이 고루섞여서 吉합니다.</td>
-        </tr>
-        <tr>
-            <td> 수리사격 </td>
-            <td> 元<small>(초년운), %s 획 <mark>%s</mark><br> - %s </small><br>
-             亨<small>(중년운), %s 획 <mark>%s</mark><br> - %s </small><br>
-             利<small>(장년운), %s 획 <mark>%s</mark><br> - %s </small><br>
-             貞<small>(말년운), %s 획 <mark>%s</mark><br> - %s </small></td>
-        </tr>
-    </tbody>
-</table>
-</div>
-""" % (name, h1, h2, h3,
-       suri_hanja[0], suri_hanja[1], suri_hanja[2],
-       suri_hanja[3], suri_hanja[4], suri_hanja[5],
-       suri_hanja[6], suri_hanja[7], suri_hanja[8],
-       suri_hanja[9], suri_hanja[10], suri_hanja[11],
-       suri_hanja[12], suri_hanja[13], suri_hanja[14],
-       )
+    # TODO: need to refactoring
+    if h3 is None:
+        if  suri_hanja[0] == suri_hanja[1]:
+            pos_neg = '%s%s 음양이 모두 같아서 吉하지 않습니다.' % (suri_hanja[0], suri_hanja[1])
+        else:
+            pos_neg = '<mark>%s%s</mark> 음양이 고루섞여서 吉합니다.' % (suri_hanja[0], suri_hanja[1])
+
+        your_luck = """
+                <table class="table">
+                <thead>
+                    <th class="col-xs-2"> 성명 </th>
+                    <th class="col-xs-10"> <strong style="font-size: 30px;">%s ( %s %s ) </strong> </th>
+                </thead>
+                <tbody style='height:5px;'>
+                    <tr>
+                        <td> 획수음양 </td>
+                        <td> %s </td>
+                    </tr>
+                    <tr>
+                        <td> 수리사격 </td>
+                        <td> 元<small>(초년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+                         亨<small>(중년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+                         利<small>(장년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+                         貞<small>(말년운), %s 획 <mark>%s</mark><br> - %s </small></td>
+                    </tr>
+                </tbody>
+                </table>
+            """ % (name, h1, h2, pos_neg,
+           suri_hanja[2], suri_hanja[3], suri_hanja[4],
+           suri_hanja[5], suri_hanja[6], suri_hanja[7],
+           suri_hanja[8], suri_hanja[9], suri_hanja[10],
+           suri_hanja[11], suri_hanja[12], suri_hanja[13],
+           )
+    else:
+        if  suri_hanja[0] == suri_hanja[1] == suri_hanja[2]:
+            pos_neg = '%s%s%s 음양이 모두 같아서 吉하지 않습니다.' % (suri_hanja[0], suri_hanja[1], suri_hanja[2])
+        else:
+            pos_neg = '<mark>%s%s</mark> 음양이 고루섞여서 吉합니다.' % (suri_hanja[0], suri_hanja[1], suri_hanja[2])
+
+        your_luck = """
+                <table class="table">
+                <thead>
+                    <th class="col-xs-2"> 성명 </th>
+                    <th class="col-xs-10"> <strong style="font-size: 30px;">%s ( %s %s %s) </strong> </th>
+                </thead>
+                <tbody style='height:5px;'>
+                    <tr>
+                        <td> 획수음양 </td>
+                        <td> %s </td>
+                    </tr>
+                    <tr>
+                        <td> 수리사격 </td>
+                        <td> 元<small>(초년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+                         亨<small>(중년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+                         利<small>(장년운), %s 획 <mark>%s</mark><br> - %s </small><br>
+                         貞<small>(말년운), %s 획 <mark>%s</mark><br> - %s </small></td>
+                    </tr>
+                </tbody>
+                </table>
+            """ % (name, h1, h2, h3, pos_neg,
+           suri_hanja[0], suri_hanja[1], suri_hanja[2],
+           suri_hanja[3], suri_hanja[4], suri_hanja[5],
+           suri_hanja[6], suri_hanja[7], suri_hanja[8],
+           suri_hanja[9], suri_hanja[10], suri_hanja[11],
+           suri_hanja[12], suri_hanja[13], suri_hanja[14],
+           )
 
     return your_luck

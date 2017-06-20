@@ -56,11 +56,11 @@ def naming_result(request):
 
 def input_name_check(input_name):
     # TODO : 2, 4, 5 이름
-    if len(input_name) != 3:
-        return False, '현재 3글자 한글이름만 지원합니다. (%s)' % input_name
+    if 5 < len(input_name) < 1:
+        return False, '현재 2~4글자 한글이름만 지원합니다. (%s)' % input_name
 
-    if input_name[0] == input_name[1] == input_name[2]:
-        err_msg = '세글자 모두 같습니다. (%s)' % input_name
+    if len(set(input_name)) == 1:
+        err_msg = '입력하신 모든 글자가 같습니다. (%s)' % input_name
         return False, err_msg
 
     r = re.compile('[A-z0-9]')
@@ -70,10 +70,6 @@ def input_name_check(input_name):
         return False, err_msg
 
     return True, None
-
-    # c = r1.search(input_name)
-
-    # r2 = re.compile('[^ ㄱ-ㅣ가-힣]+')
 
 
 def suri81(request):
@@ -92,6 +88,13 @@ def suri81(request):
                     'error_msg': error_msg,
                 })
             hanja1, hanja2, hanja3 = get_hanja_name(name)
+            if hanja1 is None:
+                return render(request, 'naming/suri81_input.html', {
+                    'title': _('이름 운세'),
+                    'form': form,
+                    'flag': False,
+                    'error_msg': '4글자 입력하는 경우 (2자 성씨 + 2자 이름)만 지원하고 있습니다.',
+                })
 
             return render(request, 'naming/suri81_trying.html', {
                 'name': name,

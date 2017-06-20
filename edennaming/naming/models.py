@@ -10,7 +10,7 @@ from .choices import (GENDER_CHOICES, ORDER_CHOICES,
 
 class NamingUserInput(models.Model):
     gender = models.IntegerField(choices=GENDER_CHOICES, default=1)
-    # birth_order = models.IntegerField(choices=ORDER_CHOICES, default=1)
+    birth_order = models.IntegerField(choices=ORDER_CHOICES, default=1)
     location = models.IntegerField(choices=LOCATION_CHOICES, default=7)
     last_name = models.IntegerField(choices=LASTNAME_CHOICES, default=2)
     birth_date = models.DateField(default=timezone.now)

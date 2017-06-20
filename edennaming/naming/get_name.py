@@ -835,22 +835,58 @@ def get_suri_hanja(conn, hanja):
             total_strokes = int(strokes[0]) + int(strokes[1])
         suri_81.append(total_strokes)
 
-    if len(suri_81) == 3:  # TODO: 현재 3글자 이름만 지원함
+    if len(suri_81) == 2:
+        sum_suri = suri_81[1]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        # 형
         sum_suri = suri_81[0] + suri_81[1]
         suri_81.append(sum_suri)
         suri_81.append(get_luck_type(conn, sum_suri))
         suri_81.append(get_suri_detail(conn, sum_suri))
 
+        # 이
+        sum_suri = suri_81[0]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        # 정
+        sum_suri = suri_81[0] + suri_81[1]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        if suri_81[0] % 2 == 0:
+            suri_81[0] = '陰'
+        else:
+            suri_81[0] = '陽'
+        if suri_81[1] % 2 == 0:
+            suri_81[1] = '陰'
+        else:
+            suri_81[1] = '陽'
+    elif len(suri_81) == 3:
+        # 원
         sum_suri = suri_81[1] + suri_81[2]
         suri_81.append(sum_suri)
         suri_81.append(get_luck_type(conn, sum_suri))
         suri_81.append(get_suri_detail(conn, sum_suri))
 
-        sum_suri = suri_81[2] + suri_81[0]
+        # 형
+        sum_suri = suri_81[0] + suri_81[1]
         suri_81.append(sum_suri)
         suri_81.append(get_luck_type(conn, sum_suri))
         suri_81.append(get_suri_detail(conn, sum_suri))
 
+        # 이
+        sum_suri = suri_81[0] + suri_81[2]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        # 정
         sum_suri = suri_81[0] + suri_81[1] + suri_81[2]
         suri_81.append(sum_suri)
         suri_81.append(get_luck_type(conn, sum_suri))
@@ -868,6 +904,48 @@ def get_suri_hanja(conn, hanja):
             suri_81[2] = '陰'
         else:
             suri_81[2] = '陽'
+    elif len(suri_81) == 4:
+        # 원
+        sum_suri = suri_81[2] + suri_81[3]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        # 형
+        sum_suri = suri_81[0] + suri_81[1]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        # 이
+        sum_suri = suri_81[0] + suri_81[1] + suri_81[2]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        # 정
+        sum_suri = suri_81[0] + suri_81[1] + suri_81[2] + suri_81[3]
+        suri_81.append(sum_suri)
+        suri_81.append(get_luck_type(conn, sum_suri))
+        suri_81.append(get_suri_detail(conn, sum_suri))
+
+        if suri_81[0] % 2 == 0:
+            suri_81[0] = '陰'
+        else:
+            suri_81[0] = '陽'
+        if suri_81[1] % 2 == 0:
+            suri_81[1] = '陰'
+        else:
+            suri_81[1] = '陽'
+        if suri_81[2] % 2 == 0:
+            suri_81[2] = '陰'
+        else:
+            suri_81[2] = '陽'
+        if suri_81[3] % 2 == 0:
+            suri_81[3] = '陰'
+        else:
+            suri_81[3] = '陽'
+
     return suri_81
 
 

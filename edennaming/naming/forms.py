@@ -13,11 +13,11 @@ class NamingForm(forms.ModelForm):
 
     class Meta:
         model = NamingUserInput
-        fields = ['gender', 'location', 'last_name', 'birth_date', 'birth_time']
-        # fields = ['gender', 'birth_order', 'location', 'last_name', 'birth_date', 'birth_time']
+        # fields = ['gender', 'location', 'last_name', 'birth_date', 'birth_time']
+        fields = ['gender', 'birth_order', 'location', 'last_name', 'birth_date', 'birth_time']
         labels = {
             'gender': _('아이의 성별'),
-            # 'birth_order': _('태어난 순서'),
+            'birth_order': _('태어난 순서'),
             'location': _('태어난 지역'),
             'last_name': _('사용할 성씨'),
             'birth_date': _('태어난 날짜'),
@@ -27,9 +27,9 @@ class NamingForm(forms.ModelForm):
                 'gender': forms.Select(attrs={
                     'style': 'width:100px; margin-left:100px',
                     }),
-                # 'birth_order': forms.Select(attrs={
-                # 'style': 'width:100px; margin-left:100px',
-                # }),
+                'birth_order': forms.Select(attrs={
+                    'style': 'width:100px; margin-left:100px',
+                    }),
                 'location': forms.Select(attrs={
                     'style': 'width:100px; margin-left:100px',
                     }),
