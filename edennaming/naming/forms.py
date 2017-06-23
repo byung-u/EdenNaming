@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 from crispy_forms.helper import FormHelper
@@ -8,42 +10,42 @@ from crispy_forms.layout import Submit
 
 from .models import NamingUserInput, Suri81UserInput
 
-
 class NamingForm(forms.ModelForm):
 
     class Meta:
         model = NamingUserInput
-        # fields = ['gender', 'location', 'last_name', 'birth_date', 'birth_time']
+        b_date = '태어난 날짜 (예: %s)' % datetime.now().strftime('%Y-%m-%d')
+        b_time = '태어난 시간 (예: %s)' % datetime.now().strftime('%H:%M')
         fields = ['gender', 'birth_order', 'location', 'last_name', 'birth_date', 'birth_time']
         labels = {
             'gender': _('아이의 성별'),
             'birth_order': _('태어난 순서'),
             'location': _('태어난 지역'),
             'last_name': _('사용할 성씨'),
-            'birth_date': _('태어난 날짜'),
-            'birth_time': _('태어난 시간'),
+            'birth_date': _(b_date),
+            'birth_time': _(b_time),
         }
         widgets = {
                 'gender': forms.Select(attrs={
-                    'style': 'width:100px; margin-left:100px',
+                    'style': 'width:100px; margin-left:200px',
                     }),
                 'birth_order': forms.Select(attrs={
-                    'style': 'width:100px; margin-left:100px',
+                    'style': 'width:100px; margin-left:200px',
                     }),
                 'location': forms.Select(attrs={
-                    'style': 'width:100px; margin-left:100px',
+                    'style': 'width:100px; margin-left:200px',
                     }),
                 'last_name': forms.Select(attrs={
-                    'style': 'width:100px; margin-left:100px',
+                    'style': 'width:100px; margin-left:200px',
                     }),
-                'birth_date': forms.TextInput(attrs={
-                    'style': 'width:150px; margin-left:100px',
-                    'required': True,
+                'birth_date': forms.DateInput(
+                    attrs={
+                    'style': 'width:150px; margin-left:200px',
                     'type': 'date',
                     }),
-                'birth_time': forms.TextInput(attrs={
-                    'style': 'width:150px; margin-left:100px',
-                    'required': True,
+                'birth_time': forms.TimeInput(
+                    attrs={
+                    'style': 'width:150px; margin-left:200px',
                     'type': 'time',
                     }),
         }
