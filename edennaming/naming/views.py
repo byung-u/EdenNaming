@@ -17,6 +17,8 @@ def naming(request):
 
     if request.method == 'POST':
         form = NamingForm(request.POST)
+
+        names = None
         if form.is_valid():
             print(request.user)
 #            if user_limit_check(request.user) is False:
@@ -30,11 +32,17 @@ def naming(request):
             last_name = form.cleaned_data['last_name']
             gender = form.cleaned_data['gender']
             # birth_order = form.cleaned_data['birth_order']
+            # msg = '내부서버 에러입니다. E-mail 문의 부탁드립니다. %s %s' % (birth_date, birth_time)
             birth_date = form.cleaned_data['birth_date']
             birth_time = form.cleaned_data['birth_time']
-
             birth_datetime = '%s %s' % (birth_date, birth_time)
             names, flag = get_new_korean_name(gender, location, last_name, birth_datetime)
+
+        if names is None:  # error
+            return render(request, 'home/error.html', {
+                'title': _('작명정보입력'),
+                'msg': '내부서버 에러입니다. E-mail 문의 부탁드립니다.',
+            })
 
         return render(request, 'naming/naming_result.html', {
             'title': _('작명정보입력'),
