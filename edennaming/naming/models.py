@@ -13,9 +13,8 @@ class NamingUserInput(models.Model):
     birth_order = models.IntegerField(choices=ORDER_CHOICES, default=1)
     location = models.IntegerField(choices=LOCATION_CHOICES, default=7)
     last_name = models.IntegerField(choices=LASTNAME_CHOICES, default=2)
-    birth_date = models.DateField(default=timezone.now)
-    birth_time = models.TimeField(default=timezone.now)
-    #birth_datetime = models.DateTimeField(input_formats=['%Y-%m-%d %H:%M'])
+    birth_date = models.DateField()
+    birth_time = models.TimeField()
 
 
 class Suri81UserInput(models.Model):
