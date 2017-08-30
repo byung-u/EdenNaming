@@ -6,14 +6,14 @@ Eden Naming
 작명
 --
 - 경우의 수를 줄이는 것이 관건
-  - 1. 선천명과의 합국 조화 관계 (생년월일시를 기준으로 사주팔자법)
-  - 2. 수리영동 조직관계
-  - 3. 음양 배열 관계
-  - 4. 오행의 배치 관계
-  - 5. 자의 정신 관계
-  - 6. 음령 오행의 역상 관계
-  - 7. 수리 역상의 관계
-  - 8. 어휘 어감의 조정 관계
+  - 선천명과의 합국 조화 관계 (생년월일시를 기준으로 사주팔자법)
+  - 수리영동 조직관계
+  - 음양 배열 관계
+  - 오행의 배치 관계
+  - 자의 정신 관계
+  - 음령 오행의 역상 관계
+  - 수리 역상의 관계
+  - 어휘 어감의 조정 관계
 
 참조
 --
@@ -33,10 +33,6 @@ Eden Naming
   - [영어단어 13000 다운로드](https://doc-0c-9s-docs.googleusercontent.com/docs/securesc/tec3bh8hdd1rjv0g5vd8td6522dcvi0k/skbq5ftun284uu34e9crd9gri3cupioc/1496210400000/11093551788895655914/14549008824345722584/0B4O_EqeoWv_EYWtQWXdOVW5ORGs?e=download&nonce=eed9hrem67510&user=14549008824345722584&hash=aj8che5ps7lc6o8rc4pfutotvfeucu8k)
 - [Unicode 한글](http://jjeong.tistory.com/696)
 
-VIM command
------------
-- ,(comma) to \n(newline)
-`:%s/,\ /\r/g`
 
 Release
 -------
