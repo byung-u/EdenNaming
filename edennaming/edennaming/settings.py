@@ -9,7 +9,7 @@ SECRET_KEY = ')7@!1d--24=@@g8r!r9^cclr9f@^r--#s^&0ym#+oiq-@v=gkl'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['edennaming.co.kr', '10.10.106.32', '127.0.0.1']
+ALLOWED_HOSTS = ['edennaming.co.kr', '1.235.190.86', '127.0.0.1']
 
 
 # Application definition
