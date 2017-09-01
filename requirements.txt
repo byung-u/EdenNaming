@@ -1,11 +1,8 @@
 dj-database-url
-Django
 gunicorn
 psycopg2
 whitenoise
-django-crispy-forms
-django-summernote
-django-rosetta
-Pillow
-requests
-six
+Django==1.11.4
+django-crispy-forms==1.6.1
+django-summernote==0.8.7.3
+pytz==2017.2
