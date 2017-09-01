@@ -3,8 +3,8 @@
 import sqlite3
 from random import randrange
 
-# /usr/local/lib/python3.6/site-packages/hangul_utils
-from hangul_utils import hangul_len, split_syllable_char
+# https://github.com/kaniblu/hangul-utils
+from .hangul_utils import hangul_len, split_syllable_char
 from .block_list import BLOCK_LIST
 from .words_list import WORDS_LIST
 from .use_name_list import (MALE_MIDDLE_DICT, FEMALE_MIDDLE_DICT,
