@@ -9,7 +9,7 @@ SECRET_KEY = ')7@!1d--24=@@g8r!r9^cclr9f@^r--#s^&0ym#+oiq-@v=gkl'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['edennaming.co.kr', '1.235.190.86', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -134,12 +134,12 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 FORCE_SCRIPT_NAME = ''
 
 # Send Email
-EMAIL_LOGIN_TITLE = "이든작명연구소에서 보내는 메일입니다."
+EMAIL_LOGIN_TITLE =
 # EMAIL_LOGIN_TITLE = ugettext("Korean Naming login token")
-EMAIL_SENDER = "이든작명연구소"
+EMAIL_SENDER =
 # EMAIL_SENDER = ugettext("Korean Naiming") + "<registration@izac.kr>"
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'byeongwoo.jun@gmail.com'
-EMAIL_HOST_PASSWORD = 'googleqlqjs'
+EMAIL_HOST =
+EMAIL_PORT =
+EMAIL_HOST_USER =
+EMAIL_HOST_PASSWORD =
