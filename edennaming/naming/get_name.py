@@ -982,7 +982,11 @@ def get_name_hanja(conn, hanja):
         if row is None:
             last_s = conn.cursor()
             query = 'SELECT pronunciations FROM last_name where hanja="%s"' % hanja[i]
-            last_s.execute(query)
+            try:
+                last_s.execute(query)
+            except:
+                print('get_suri_hanja SELECT query failed, hanja=', hanja)
+                return None
             last_row = last_s.fetchone()
             if last_row is None:
                 print('get_suri_hanja SELECT failed, hanja=', hanja)
@@ -997,6 +1001,8 @@ def get_name_hanja(conn, hanja):
 
 def create_result_message(conn, saju, hanja, hangul):
     name_hanja = get_name_hanja(conn, hanja)
+    if name_hanja is None:
+        return None
     suri_hanja = get_suri_hanja(conn, hanja)
     if suri_hanja is None:
         return None
@@ -1115,7 +1121,7 @@ def get_name(birth, ln, gender):
     new_name_info = create_result_message(conn, saju, hanja, hangul)
     if new_name_info is None:
         print('[ERR] create_result_message failed', ln, birth)
-        error_message = "죄송합니다. <br>내부 서버에 문제가 있습니다.<br>"
+        error_message = "관련 한자에 대한 정보는 현재 제공하지 않습니다.<br>"
         return error_message, False
 
     conn.close()  # db close
