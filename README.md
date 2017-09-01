@@ -23,15 +23,25 @@ Eden Naming
 성명학(姓名學)에 대한 인식 (金栢滿 김백만, 새국어생활, Vol.1 No.1, [1991])
 
 #### SITE
-- 갑자: https://namu.wiki/w/갑자
-- 인명한자: http://help.scourt.go.kr/nm/img/hanja/hanja_2015.pdf
-- 긍정어, 부정어 분류: http://newpower.tistory.com/127 
-- [긍정, 부정 데이터](https://github.com/The-ECG/BigData1_1.3.3_Text-Mining/blob/master/dictionary.zip)
-  - 모든 이름을 긍정/부정 비교하다보니 너무 느려서 관련 로직은 제거
-- 일반 단어 제외 목록
-  - [국립국어원](http://www.korean.go.kr/front/etcData/etcDataView.do?mn_id=46&etc_seq=71)
-  - [영어단어 13000 다운로드](https://doc-0c-9s-docs.googleusercontent.com/docs/securesc/tec3bh8hdd1rjv0g5vd8td6522dcvi0k/skbq5ftun284uu34e9crd9gri3cupioc/1496210400000/11093551788895655914/14549008824345722584/0B4O_EqeoWv_EYWtQWXdOVW5ORGs?e=download&nonce=eed9hrem67510&user=14549008824345722584&hash=aj8che5ps7lc6o8rc4pfutotvfeucu8k)
-- [Unicode 한글](http://jjeong.tistory.com/696)
+  - 갑자: https://namu.wiki/w/갑자
+
+  - 한자: 
+    - [네이버 한자](http://hanja.naver.com/hanja?q=馬)
+
+  - 인명한자: 
+    - [대법원](http://help.scourt.go.kr/nm/img/hanja/hanja_2015.pdf)
+    - [나무위키](https://namu.wiki/w/%ED%95%9C%EC%9E%90/%EC%9D%B8%EB%AA%85%EC%9A%A9%20%ED%95%9C%EC%9E%90%ED%91%9C)
+
+  - 긍정어, 부정어 분류
+  - [관련 참고 블로그](http://newpower.tistory.com/127)
+  - [긍정, 부정 데이터](https://github.com/The-ECG/BigData1_1.3.3_Text-Mining/blob/master/dictionary.zip)
+    - 모든 이름을 긍정/부정 비교하다보니 너무 느려서 관련 로직은 제거
+
+  - 일반 단어 제외 목록
+    - [국립국어원](http://www.korean.go.kr/front/etcData/etcDataView.do?mn_id=46&etc_seq=71)
+    - [영어단어 13000 다운로드](https://doc-0c-9s-docs.googleusercontent.com/docs/securesc/tec3bh8hdd1rjv0g5vd8td6522dcvi0k/skbq5ftun284uu34e9crd9gri3cupioc/1496210400000/11093551788895655914/14549008824345722584/0B4O_EqeoWv_EYWtQWXdOVW5ORGs?e=download&nonce=eed9hrem67510&user=14549008824345722584&hash=aj8che5ps7lc6o8rc4pfutotvfeucu8k)
+  
+  - [Unicode 한글](http://jjeong.tistory.com/696)
 
 
 Release
