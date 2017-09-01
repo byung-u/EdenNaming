@@ -36,7 +36,10 @@ Eden Naming
 
 Release
 -------
-- 0.7.0 (current)
+- 0.7.1 (current)
+  - Heroku deploy
+
+- 0.7.0 (August, 31 Thursday 2017)
   - Code refactoring
   - Test
 
