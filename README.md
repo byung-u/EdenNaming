@@ -1,6 +1,7 @@
 Eden Naming
 ============
-- 작명 서비스 제공
+- [Heroku app으로 시험연동](https://shrouded-lowlands-76343.herokuapp.com)
+- 둘째의 이름 짓다가 작명이 괜히 신경쓰여서 이를 확인해보려고 시험용 서비스를 만듦
 - 개인 용도, 일부 정보는 비공개함
 
 작명
