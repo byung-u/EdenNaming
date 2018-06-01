@@ -1076,7 +1076,10 @@ def create_result_message(conn, saju, hanja, hangul):
 
 
 def get_random_new_name(name_dict):
-    rd = randrange(len(name_dict) - 1)
+    if len(name_dict) == 0:
+        return None, None
+    
+    rd = randrange(len(name_dict))
     hanja, hangul = None, None
     for idx, i in enumerate(name_dict):
         if idx == rd:
